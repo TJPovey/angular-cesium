@@ -1,4 +1,4 @@
-<ac-map [sceneMode]="sceneMode" id="main-map">
+<ac-map #map [sceneMode]="sceneMode" id="main-map">
   <!-- <ac-map-layer-provider
     *ngIf="appSettingsService.showMapLayer"
     [provider]="arcGisMapServerProvider"
@@ -9,30 +9,22 @@
   </ac-map-layer-provider> -->
 
 
-<!-- start - mapbox style image provider different than the tile api -->
-
-  <!-- <ac-map-layer-provider 
+  <ac-map-layer-provider 
   [provider]="mapboxStyleImageryProvider"
   [options]="{
-      styleId:'style id from mapbox style dashboard item',
+      styleId:'satellite-streets-v11',
       url:'https://api.mapbox.com/styles/v1/',
-      username:'your user name',
-      scaleFactor:'@2x',
-      tilesize:'512',
-      accessToken : 'your access token from map box'
+      maximumLevel: 22,
+      accessToken : ''
     }"
->   
-</ac-map-layer-provider> -->
+  >   
+  </ac-map-layer-provider>
 
-<!-- end - mapbox style image provider-->
-
-  <ac-3d-tile-layer
-    *ngIf="appSettingsService.show3dtiles"
-    [options]="{
-      url: Cesium.IonResource.fromAssetId(29328)
-    }"
+  <ac-map-terrain-provider
+    [provider]="mapTerrainProvider"
   >
-  </ac-3d-tile-layer>
+  </ac-map-terrain-provider>
+
    <!-- <entities-with-arrays-example #layer [show]="true"></entities-with-arrays-example> -->
 <!--   <html-layer-example> </html-layer-example>-->
 <!--  <boxes-layer-example></boxes-layer-example>-->
@@ -48,23 +40,23 @@
 <!--   <polyline-layer-example #layer></polyline-layer-example>-->
 <!--   <point-layer-example #layer></point-layer-example>-->
 <!--   <arc-layer-example #layer></arc-layer-example>-->
-<!--   <polygon-layer-example></polygon-layer-example>-->
-<!--   <polygon-performance-test></polygon-performance-test> -->
+  <!-- <polygon-layer-example></polygon-layer-example> -->
+  <!-- <polygon-performance-test></polygon-performance-test> -->
 <!-- <rectangle-layer-example></rectangle-layer-example>-->
 <!--   <hippodrome-layer-example></hippodrome-layer-example>-->
 <!--   <points-editor-example></points-editor-example>-->
 <!--   <polyline-editor-example></polyline-editor-example>-->
-<!--   <polygons-editor-example></polygons-editor-example>-->
+  <polygons-editor-example></polygons-editor-example>
 <!-- <rectangles-editor-example></rectangles-editor-example> -->
 <!--   <circles-editor-example></circles-editor-example>-->
 <!--   <ellipses-editor-example></ellipses-editor-example>-->
 <!--   <hippodrome-editor-example></hippodrome-editor-example>-->
 <!--  <rectangle-editor-example></rectangle-editor-example>-->
-<!--   <selection-layer-example></selection-layer-example>-->
-<!--   <heatmap-example></heatmap-example>-->
+  <!-- <selection-layer-example></selection-layer-example> -->
+  <!-- <heatmap-example></heatmap-example> -->
 <!--   <single-entity-on-map-example></single-entity-on-map-example>-->
 <!--   <czml-layer-example></czml-layer-example>-->
-<!--   <track-entity-layer></track-entity-layer>-->
+  <!-- <track-entity-layer></track-entity-layer> -->
 <!--   <maps-provider-example></maps-provider-example>-->
 <!--  <map-events-example></map-events-example>-->
 

@@ -43,25 +43,33 @@ export class PolygonsEditorExampleComponent implements OnInit {
   }
 
   startEdit3D() {
-    const viewer = this.cesiumService.getViewer();
-    if (!this.tileset) {
-      this.tileset = viewer.scene.primitives.add(
-        new Cesium.Cesium3DTileset({
-          url: Cesium.IonResource.fromAssetId(29328)
-        })
-      );
-    }
-    this.camService.cameraFlyTo({
-      destination: Cesium.Cartesian3.fromRadians(this.tilesLocation.longitude, this.tilesLocation.latitude, this.tilesLocation.height),
-      orientation : {
-        pitch : Cesium.Math.toRadians(-35.0),
-      }});
 
     if (this.editing$) {
       this.stopEdit();
     }
     this.editing$ = this.polygonsEditor.create({
-      clampHeightTo3D: true
+      clampHeightTo3D: true,
+      clampHeightTo3DOptions: {
+        clampMostDetailed: true,
+        clampToTerrain: false,
+        clampToHeightPickWidth: 3,
+      },
+      allowDrag: true,
+      pointProps: {
+        heightReference: 0,
+      },
+      polygonProps: {
+        extrudedHeight: 150,
+        extrudedHeightReference: 0,
+        height: 139,
+        heightReference: 0,
+        closeBottom: false,
+        material: new Cesium.Color(0, 0, 0, 0.3),
+      },
+      polylineProps: {
+        material: () => Cesium.Color.BLACK,
+        width: 2.0,
+      }
     });
   }
 
