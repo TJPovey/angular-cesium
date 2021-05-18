@@ -9,7 +9,7 @@ if (environment.production) {
 }
 
 Cesium.buildModuleUrl.setBaseUrl('/assets/cesium/');
-Cesium.Ion.defaultAccessToken = ''
+Cesium.Ion.defaultAccessToken = 'dffv';
 
 platformBrowserDynamic().bootstrapModule(AppModule)
   .catch(err => console.error(err));
