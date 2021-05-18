@@ -9,7 +9,7 @@ if (environment.production) {
 }
 
 Cesium.buildModuleUrl.setBaseUrl('/assets/cesium/');
-Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI2YTY1NDYzYS01YzgxLT' +
-  'Q2MGUtODBiYy0zODRmY2MwOGY4MDIiLCJpZCI6MjA1LCJpYXQiOjE1MDQ3MjQ1Njh9.rKgXUKAfFiiSAm_b9T8bpsDVdj0YyZeqGxNpzLlhxpk';
+Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIzZGFiODFkMi1lM2VhLTRmMGMtYmQ1MS1lZDI5NmYxYTdjNGEiLCJpZCI6MTU3MzYsInNjb3BlcyI6WyJhc3IiLCJnYyJdLCJpYXQiOjE1Njg3MzE5NzB9.9qw8Aceuwh0AHDn-JC2SPZnjcAhznFs35-y_JosSTSA'
+
 platformBrowserDynamic().bootstrapModule(AppModule)
   .catch(err => console.error(err));
