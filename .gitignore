@@ -1,7 +1,8 @@
 # See http://help.github.com/ignore-files/ for more about ignoring files.
 
 # ignore files with tokens
-main.ts
+./projects/demo/src/main.ts
+projects/demo/src/main.ts
 
 ./newrelic_agent.log
 
