@@ -5,6 +5,11 @@ export interface PolygonProps {
   fill?: boolean;
   classificationType?: any;
   zIndex?: any;
+  extrudedHeight?: number;
+  extrudedHeightReference?: any,
+  height?: number,
+  heightReference?: any,
+  closeBottom?: boolean;
 }
 
 export interface PolygonEditOptions extends PolylineEditOptions {

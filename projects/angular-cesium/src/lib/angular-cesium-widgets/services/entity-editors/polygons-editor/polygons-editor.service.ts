@@ -182,6 +182,100 @@ export class PolygonsEditorService {
     return cartesian3;
   }
 
+  public getRayPosition(
+    mousePosition
+    ): Cartesian3 {
+
+    var cartesianScratch = new Cesium.Cartesian3();
+    var rayScratch = new Cesium.Ray();
+    var cartPickRay = new Cesium.Cartographic();
+    var globePickScratch = new Cesium.Cartesian3();
+    var cartPickGlobe = new Cesium.Cartographic();
+
+    this.cesiumScene.camera.getPickRay(mousePosition, rayScratch);
+
+    if (this.cesiumScene.pickPositionSupported) {
+
+      let pickedObjects = this.cesiumScene.drillPick(mousePosition, 10, 10);
+      console.log(pickedObjects);
+      if (pickedObjects.length > 0) {
+
+        // Seperate sketch and none sketch elements
+        let sketchElements: Array<any> = [];
+        const noneSketchElements = pickedObjects.filter((pickedObject) => {
+
+          const noneSketchElement = 
+            !(pickedObject.primitive && 
+              pickedObject.primitive instanceof Cesium.Primitive ||
+              pickedObject.primitive instanceof Cesium.GroundPrimitive ||
+              pickedObject.primitive instanceof Cesium.GroundPolylinePrimitive ||
+              pickedObject.primitive instanceof Cesium.PointPrimitive);
+
+          if (!noneSketchElement) {
+            sketchElements.push(pickedObject);
+          }
+
+          return noneSketchElement;
+        });
+
+
+        // Get the last none sketch element from drillPick, normally a 3D Tileset
+        const noneSketchElement = noneSketchElements[noneSketchElements.length - 1];
+
+        if (
+          Cesium.defined(noneSketchElement) &&
+          (noneSketchElement instanceof Cesium.Cesium3DTileFeature ||
+            noneSketchElement.primitive instanceof Cesium.Cesium3DTileset ||
+            noneSketchElement.primitive instanceof Cesium.Model)
+        ) {
+          
+          // Get the intersection of the ray and the picked object, ignore sketch elements
+          // pickFromRay is a private cesium function
+          // Cesium.Cartesian3.clone(this.cesiumScene.pickFromRay(rayScratch, undefined).position, cartesianScratch);
+          var rayIntersection = this.cesiumScene.pickFromRay(rayScratch, sketchElements);
+
+          if (!rayIntersection) {
+            return;
+          }
+          cartesianScratch = rayIntersection.position;
+          // console.log("Pick Ray cartesian: ");
+          // console.log(cartesianScratch);
+          if (!cartesianScratch || cartesianScratch.equals(new Cesium.Cartesian3()))
+          {
+            return;
+          }
+          cartPickRay = Cesium.Cartographic.fromCartesian(cartesianScratch);
+          // console.log("Pick Ray: ", cartPickRay);
+          // If the resulting ray position's elevation is below the terrain,
+          // select the terrain instead as otherwise this could cause issues
+          this.cesiumScene.globe.pick(rayScratch, this.cesiumScene, globePickScratch);
+          cartPickGlobe = Cesium.Cartographic.fromCartesian(globePickScratch);
+          // console.log("PickGlobe: ", cartPickGlobe);
+          if (cartPickRay.height < cartPickGlobe.height) {
+            Cesium.Cartesian3.clone(globePickScratch, cartesianScratch);
+          }
+
+          // check to let us know if we should pick against the globe instead
+          // don't return new result if cartesian is at centre of ellipsoid (0,0,0)
+          if (Cesium.defined(cartesianScratch) && !cartesianScratch.equals(new Cesium.Cartesian3())) {
+            return cartesianScratch;
+          }
+        }
+      }
+    }
+    if (!Cesium.defined(this.cesiumScene.globe)) {
+      return;
+    }
+
+    // Get the terrain position if no objects have been selected
+    this.cesiumScene.globe.pick(rayScratch, this.cesiumScene, cartesianScratch);
+
+    // don't return new result if cartesian is at centre of ellipsoid (0,0,0)
+    if (Cesium.defined(cartesianScratch) && !cartesianScratch.equals(new Cesium.Cartesian3())) {
+      return cartesianScratch;
+    }
+  }
+
   create(options = DEFAULT_POLYGON_OPTIONS, priority = 100): PolygonEditorObservable {
     const positions: Cartesian3[] = [];
     const id = generateKey();
@@ -227,7 +321,8 @@ export class PolygonsEditorService {
     const editorObservable = this.createEditorObservable(clientEditSubject, id);
 
     mouseMoveRegistration.subscribe(({ movement: { endPosition } }) => {
-      const position = this.screenToPosition(endPosition, polygonOptions.clampHeightTo3D, polygonOptions.clampHeightTo3DOptions);
+      //const position = this.screenToPosition(endPosition, polygonOptions.clampHeightTo3D, polygonOptions.clampHeightTo3DOptions);
+      const position = this.getRayPosition(endPosition);
 
       if (position) {
         this.updateSubject.next({
@@ -244,7 +339,8 @@ export class PolygonsEditorService {
       if (finishedCreate) {
         return;
       }
-      const position = this.screenToPosition(endPosition, polygonOptions.clampHeightTo3D, polygonOptions.clampHeightTo3DOptions);
+      // const position = this.screenToPosition(endPosition, polygonOptions.clampHeightTo3D, polygonOptions.clampHeightTo3DOptions);
+      const position = this.getRayPosition(endPosition);
       if (!position) {
         return;
       }
@@ -282,7 +378,8 @@ export class PolygonsEditorService {
 
 
     addLastPointRegistration.subscribe(({ movement: { endPosition } }) => {
-      const position = this.screenToPosition(endPosition, polygonOptions.clampHeightTo3D, polygonOptions.clampHeightTo3DOptions);
+      // const position = this.screenToPosition(endPosition, polygonOptions.clampHeightTo3D, polygonOptions.clampHeightTo3DOptions);
+      const position = this.getRayPosition(endPosition);
       if (!position) {
         return;
       }
@@ -378,7 +475,7 @@ export class PolygonsEditorService {
                       editSubject: Subject<PolygonEditUpdate>,
                       options: PolygonEditOptions,
                       editObservable?: PolygonEditorObservable): PolygonEditorObservable {
-    this.clampPoints(id, options.clampHeightTo3D, options.clampHeightTo3DOptions);
+    //this.clampPoints(id, options.clampHeightTo3D, options.clampHeightTo3DOptions);
 
     const pointDragRegistration = this.mapEventsManager.register({
       event: options.dragPointEvent,
@@ -413,7 +510,8 @@ export class PolygonsEditorService {
     pointDragRegistration.pipe(
       tap(({ movement: { drop } }) => this.polygonsManager.get(id).enableEdit && this.cameraService.enableInputs(drop)))
       .subscribe(({ movement: { endPosition, drop }, entities }) => {
-        const position = this.screenToPosition(endPosition, options.clampHeightTo3D, options.clampHeightTo3DOptions);
+        // const position = this.screenToPosition(endPosition, options.clampHeightTo3D, options.clampHeightTo3DOptions);
+        const position = this.getRayPosition(endPosition);
         if (!position) {
           return;
         }
@@ -434,15 +532,17 @@ export class PolygonsEditorService {
           points: this.getPoints(id),
         });
 
-        this.clampPointsDebounced(id, options.clampHeightTo3D, options.clampHeightTo3DOptions);
+        // this.clampPointsDebounced(id, options.clampHeightTo3D, options.clampHeightTo3DOptions);
       });
 
     if (shapeDragRegistration) {
       shapeDragRegistration
         .pipe(tap(({ movement: { drop } }) => this.polygonsManager.get(id).enableEdit && this.cameraService.enableInputs(drop)))
         .subscribe(({ movement: { startPosition, endPosition, drop }, entities }) => {
-          const endDragPosition = this.screenToPosition(endPosition, false, options.clampHeightTo3DOptions);
-          const startDragPosition = this.screenToPosition(startPosition, false, options.clampHeightTo3DOptions);
+          // const endDragPosition = this.screenToPosition(endPosition, false, options.clampHeightTo3DOptions);
+          const endDragPosition = this.getRayPosition(endPosition);
+          // const startDragPosition = this.screenToPosition(startPosition, false, options.clampHeightTo3DOptions);
+          const startDragPosition = this.getRayPosition(startPosition);
           if (!endDragPosition) {
             return;
           }
@@ -489,7 +589,7 @@ export class PolygonsEditorService {
         points: this.getPoints(id),
       });
 
-      this.clampPoints(id, options.clampHeightTo3D, options.clampHeightTo3DOptions);
+      //this.clampPoints(id, options.clampHeightTo3D, options.clampHeightTo3DOptions);
     });
 
     const observables = [pointDragRegistration, pointRemoveRegistration];
@@ -514,7 +614,7 @@ export class PolygonsEditorService {
     polygonOptions.polygonProps = {...DEFAULT_POLYGON_OPTIONS.polygonProps, ...options.polygonProps};
     polygonOptions.polylineProps = {...DEFAULT_POLYGON_OPTIONS.polylineProps, ...options.polylineProps};
     polygonOptions.clampHeightTo3DOptions = { ...DEFAULT_POLYGON_OPTIONS.clampHeightTo3DOptions, ...options.clampHeightTo3DOptions};
-
+    console.log(polygonOptions);
     if (options.clampHeightTo3D) {
       if (!this.cesiumScene.pickPositionSupported || !this.cesiumScene.clampToHeightSupported) {
         throw new Error(`Cesium pickPosition and clampToHeight must be supported to use clampHeightTo3D`);
@@ -530,8 +630,8 @@ export class PolygonsEditorService {
 
       polygonOptions.allowDrag = false;
       polygonOptions.polylineProps.clampToGround = true;
-      polygonOptions.pointProps.heightReference = polygonOptions.clampHeightTo3DOptions.clampToTerrain ?
-        Cesium.HeightReference.CLAMP_TO_GROUND : Cesium.HeightReference.RELATIVE_TO_GROUND;
+      // polygonOptions.pointProps.heightReference = polygonOptions.clampHeightTo3DOptions.clampToTerrain ?
+      //   Cesium.HeightReference.CLAMP_TO_GROUND : Cesium.HeightReference.RELATIVE_TO_GROUND;
       polygonOptions.pointProps.disableDepthTestDistance = Number.POSITIVE_INFINITY;
     }
     return polygonOptions;

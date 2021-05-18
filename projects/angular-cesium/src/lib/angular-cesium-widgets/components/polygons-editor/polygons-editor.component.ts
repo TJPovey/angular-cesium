@@ -56,6 +56,12 @@ import { EditablePolygon } from '../../models/editable-polygon';
           fill: polygon.polygonProps.fill,
           classificationType: polygon.polygonProps.classificationType,
           zIndex: polygon.polygonProps.zIndex,
+          extrudedHeight: polygon.polygonProps.extrudedHeight,
+          extrudedHeightReference: polygon.polygonProps.extrudedHeightReference,
+          height: polygon.polygonProps.height,
+          heightReference: polygon.polygonProps.heightReference,
+          closeBottom: polygon.polygonProps.closeBottom,
+          outline: true,
         }"
       >
       </ac-polygon-desc>
