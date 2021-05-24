@@ -1,4 +1,5 @@
 import { PolylineEditOptions } from './polyline-edit-options';
+import { WallProps } from './wall-edit-options';
 
 export interface PolygonProps {
   material?: any;
@@ -14,4 +15,6 @@ export interface PolygonProps {
 
 export interface PolygonEditOptions extends PolylineEditOptions {
   polygonProps?: PolygonProps;
+  extrudedHeight?: number;
+  wallProps?: WallProps;
 }
