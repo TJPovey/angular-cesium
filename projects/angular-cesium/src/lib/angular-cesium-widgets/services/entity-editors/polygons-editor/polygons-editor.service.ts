@@ -560,15 +560,15 @@ export class PolygonsEditorService {
           
           const polygon = this.polygonsManager.get(id);
           let deltaY = (startPosition.y - endPosition.y) * 0.009;
-          polygon.height += deltaY;
+          const updatedHeight = polygon.height + deltaY;
 
           // TODO: look into classification
           const updateHeight = {
             id,
             polygonOptions: {
-              extrudedHeight: polygon.height,
+              extrudedHeight: updatedHeight <= 0 ? 0 : updatedHeight,
               polygonProps: {
-                heightReference: Cesium.HeightReference.NONE,
+                heightReference: updatedHeight <= 0 ? Cesium.HeightReference.CLAMP_TO_GROUND : Cesium.HeightReference.NONE,
               }
             },
             editMode: EditModes.EDIT,
