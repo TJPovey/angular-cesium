@@ -368,7 +368,6 @@ export class PolygonsEditorComponent implements OnDestroy {
       }
       case EditActions.TRANSFORM: {
         const polygon = this.polygonsManager.get(update.id);
-        console.log(update.id);
         if (polygon) {
           polygon.enableEdit = true;
           polygon.updateHeight(update.polygonOptions);
@@ -407,7 +406,6 @@ export class PolygonsEditorComponent implements OnDestroy {
   // Only required for commented out polygon above, when not using callbacks
   getPolygonHeightReference(polygon: EditablePolygon) {
     if (polygon.getHeightReference() === Cesium.HeightReference.NONE) {
-
       return polygon.getHeightReference();
     }
     return undefined;
