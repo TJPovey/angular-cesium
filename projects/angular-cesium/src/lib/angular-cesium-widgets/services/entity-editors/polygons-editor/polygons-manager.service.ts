@@ -10,16 +10,19 @@ export class PolygonsManagerService {
   polygons: Map<string, EditablePolygon> = new Map<string, EditablePolygon>();
 
   createEditablePolygon(id: string, editPolygonsLayer: AcLayerComponent, editPointsLayer: AcLayerComponent,
-                        editPolylinesLayer: AcLayerComponent, coordinateConverter: CoordinateConverter,
-                        polygonOptions?: PolygonEditOptions, positions?: Cartesian3[]) {
+                        editPolylinesLayer: AcLayerComponent, editWallsLayer: AcLayerComponent, widgetsLayer: AcLayerComponent, 
+                        coordinateConverter: CoordinateConverter, polygonOptions?: PolygonEditOptions, positions?: Cartesian3[]) {
     const editablePolygon = new EditablePolygon(
       id,
       editPolygonsLayer,
       editPointsLayer,
       editPolylinesLayer,
+      editWallsLayer,
+      widgetsLayer,
       coordinateConverter,
       polygonOptions,
       positions);
+      console.log("props: ", polygonOptions.polygonProps);
     this.polygons.set(id, editablePolygon
     );
   }

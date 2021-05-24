@@ -14,6 +14,8 @@ import { PolygonsManagerService } from '../../services/entity-editors/polygons-e
 import { PolygonsEditorService } from '../../services/entity-editors/polygons-editor/polygons-editor.service';
 import { LabelProps } from '../../models/label-props';
 import { EditablePolygon } from '../../models/editable-polygon';
+import { EditCylinder } from '../../models/edit-cylinder';
+import { EditPolyline } from '../../models/edit-polyline';
 
 @Component({
   selector: 'polygons-editor',
@@ -27,6 +29,7 @@ import { EditablePolygon } from '../../models/editable-polygon';
         clampToGround: polyline.props.clampToGround,
         zIndex: polyline.props.zIndex,
         classificationType: polyline.props.classificationType,
+        show: getPolylineShow(polyline),
       }"
       >
       </ac-polyline-desc>
@@ -48,7 +51,33 @@ import { EditablePolygon } from '../../models/editable-polygon';
       </ac-point-desc>
     </ac-layer>
 
+    <ac-layer #editWallsLayer acFor="let wall of editWalls$" [context]="this">
+      <ac-wall-desc props="{
+        positions: wall.getWallPositionsCallback(),
+        minimumHeights: wall.getPositionsMinHeightCallback(),
+        maximumHeights: wall.getPositionsMaxHeightCallback(),
+        outline: wall.props.outline,
+        outlineColor: wall.props.outlineColor,
+        outlineWidth: wall.props.outlineWidth,
+        material: wall.props.material(),
+      }">
+      </ac-wall-desc>
+    </ac-layer>
+
+    <ac-layer #widgetsLayer acFor="let widget of editWidgets$" [context]="this">
+      <ac-cylinder-desc props="{
+        show: getWidgetShow(widget),
+        position : widget.getPositionCallback(),
+        length: widget.length,
+        topRadius: widget.topRadius,
+        bottomRadius: widget.bottomRadius,
+      }">
+      </ac-cylinder-desc>
+    </ac-layer>
+
     <ac-layer #editPolygonsLayer acFor="let polygon of editPolygons$" [context]="this">
+
+      <!-- 'Look into why below wont work, ground primitive persits when extruded'
       <ac-polygon-desc
         props="{
           hierarchy: polygon.getPositionsHierarchyCallbackProperty(),
@@ -56,15 +85,41 @@ import { EditablePolygon } from '../../models/editable-polygon';
           fill: polygon.polygonProps.fill,
           classificationType: polygon.polygonProps.classificationType,
           zIndex: polygon.polygonProps.zIndex,
-          extrudedHeight: polygon.polygonProps.extrudedHeight,
-          extrudedHeightReference: polygon.polygonProps.extrudedHeightReference,
-          height: polygon.polygonProps.height,
-          heightReference: polygon.polygonProps.heightReference,
-          closeBottom: polygon.polygonProps.closeBottom,
-          outline: true,
+          heightReference: getPolygonHeightReference(polygon),
+          height: getPolygonHeight(polygon),
         }"
       >
       </ac-polygon-desc>
+      -->
+
+      <ac-polygon-desc
+      props="{
+        hierarchy: polygon.getPositionsHierarchyCallbackProperty(),
+        material: polygon.polygonProps.material,
+        fill: polygon.polygonProps.fill,
+        classificationType: polygon.polygonProps.classificationType,
+        zIndex: polygon.polygonProps.zIndex,
+        heightReference: undefined,
+        height: undefined,
+        show: polygon.getVisibilityCallback(false),
+      }"
+      >
+      </ac-polygon-desc>
+
+      <ac-polygon-desc
+      props="{
+        hierarchy: polygon.getPositionsHierarchyCallbackProperty(),
+        material: polygon.polygonProps.material,
+        fill: polygon.polygonProps.fill,
+        classificationType: polygon.polygonProps.classificationType,
+        zIndex: polygon.polygonProps.zIndex,
+        heightReference: polygon.getHeightReferenceCallback(),
+        height: polygon.getMaxHeightCallback(),
+        show: polygon.getVisibilityCallback(true),
+      }"
+      >
+      </ac-polygon-desc>
+
       <ac-array-desc acFor="let label of polygon.labels" [idGetter]="getLabelId">
         <ac-label-primitive-desc
           props="{
@@ -104,11 +159,15 @@ export class PolygonsEditorComponent implements OnDestroy {
   public Cesium = Cesium;
   public editPoints$ = new Subject<AcNotification>();
   public editPolylines$ = new Subject<AcNotification>();
+  public editWalls$ = new Subject<AcNotification>();
   public editPolygons$ = new Subject<AcNotification>();
+  public editWidgets$ = new Subject<AcNotification>();
 
   @ViewChild('editPolygonsLayer') private editPolygonsLayer: AcLayerComponent;
   @ViewChild('editPointsLayer') private editPointsLayer: AcLayerComponent;
   @ViewChild('editPolylinesLayer') private editPolylinesLayer: AcLayerComponent;
+  @ViewChild('editWallsLayer') private editWallsLayer: AcLayerComponent;
+  @ViewChild('widgetsLayer') private widgetsLayer: AcLayerComponent;
 
   constructor(
     private polygonsEditor: PolygonsEditorService,
@@ -162,11 +221,14 @@ export class PolygonsEditorComponent implements OnDestroy {
   handleCreateUpdates(update: PolygonEditUpdate) {
     switch (update.editAction) {
       case EditActions.INIT: {
+        console.log(update.polygonOptions);
         this.polygonsManager.createEditablePolygon(
           update.id,
           this.editPolygonsLayer,
           this.editPointsLayer,
           this.editPolylinesLayer,
+          this.editWallsLayer,
+          this.widgetsLayer,
           this.coordinateConverter,
           update.polygonOptions,
         );
@@ -235,6 +297,8 @@ export class PolygonsEditorComponent implements OnDestroy {
           this.editPolygonsLayer,
           this.editPointsLayer,
           this.editPolylinesLayer,
+          this.editWallsLayer,
+          this.widgetsLayer,
           this.coordinateConverter,
           update.polygonOptions,
           update.positions,
@@ -302,6 +366,16 @@ export class PolygonsEditorComponent implements OnDestroy {
         }
         break;
       }
+      case EditActions.TRANSFORM: {
+        const polygon = this.polygonsManager.get(update.id);
+        console.log(update.id);
+        if (polygon) {
+          polygon.enableEdit = true;
+          polygon.updateHeight(update.polygonOptions);
+          this.renderEditLabels(polygon, update);
+        }
+        break;
+      }
       default: {
         return;
       }
@@ -318,5 +392,29 @@ export class PolygonsEditorComponent implements OnDestroy {
 
   getPointShow(point: EditPoint) {
     return point.show && (point.isVirtualEditPoint() ? point.props.showVirtual : point.props.show);
+  }
+
+  getWidgetShow(cylinder: EditCylinder) {
+    return cylinder.show;
+  }
+
+  getPolylineShow(polyline: EditPolyline) {
+    const polygon = this.polygonsManager.get(polyline.getEditedEntityId());
+    return polygon.getVisibility(false);
+  }
+
+
+  // Only required for commented out polygon above, when not using callbacks
+  getPolygonHeightReference(polygon: EditablePolygon) {
+    if (polygon.getHeightReference() === Cesium.HeightReference.NONE) {
+
+      return polygon.getHeightReference();
+    }
+    return undefined;
+  }
+
+  // Only required for commented out polygon above, when not using callbacks
+  getPolygonHeight(polygon: EditablePolygon) {
+    return polygon.getMaxHeight();
   }
 }

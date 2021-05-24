@@ -1,3 +1,4 @@
+import { EditCylinder } from './edit-cylinder';
 import { AcEntity } from '../../angular-cesium/models/ac-entity';
 import { EditPoint } from './edit-point';
 import { EditPolyline } from './edit-polyline';
@@ -9,30 +10,41 @@ import { PolygonEditOptions, PolygonProps } from './polygon-edit-options';
 import { PointProps } from './point-edit-options';
 import { PolylineProps } from './polyline-edit-options';
 import { defaultLabelProps, LabelProps } from './label-props';
+import { EditWall } from './edit-wall';
+import { WallProps } from './wall-edit-options';
 
 export class EditablePolygon extends AcEntity {
   private positions: EditPoint[] = [];
   private polylines: EditPolyline[] = [];
+  private wall: EditWall;
+  private cylinderWidget: EditCylinder;
   private movingPoint: EditPoint;
   private doneCreation = false;
   private _enableEdit = true;
+  private _polygonOptions: PolygonEditOptions;
   private _polygonProps: PolygonProps;
   private _defaultPointProps: PointProps;
   private _defaultPolylineProps: PolylineProps;
+  private _defaultWallProps: WallProps;
   private lastDraggedToPosition: Cartesian3;
   private _labels: LabelProps[] = [];
+  private _height: number = 0;
 
   constructor(private id: string,
               private polygonsLayer: AcLayerComponent,
               private pointsLayer: AcLayerComponent,
               private polylinesLayer: AcLayerComponent,
+              private wallsLayer: AcLayerComponent,
+              private widgetLayer: AcLayerComponent,
               private coordinateConverter: CoordinateConverter,
-              private polygonOptions: PolygonEditOptions,
+              private polygonEditOptions: PolygonEditOptions,
               positions?: Cartesian3[]) {
     super();
-    this.polygonProps = {...polygonOptions.polygonProps};
-    this.defaultPointProps = {...polygonOptions.pointProps};
-    this.defaultPolylineProps = {...polygonOptions.polylineProps};
+    this.polygonOptions = {...polygonEditOptions};
+    this.polygonProps = {...polygonEditOptions.polygonProps};
+    this.defaultPointProps = {...polygonEditOptions.pointProps};
+    this.defaultPolylineProps = {...polygonEditOptions.polylineProps};
+    this.defaultWallProps = {...polygonEditOptions.wallProps};
     if (positions && positions.length >= 3) {
       this.createFromExisting(positions);
     }
@@ -56,12 +68,28 @@ export class EditablePolygon extends AcEntity {
     });
   }
 
+  get height(): number {
+    return this._height;
+  }
+
+  set height(value: number) {
+    this._height = value;
+  }
+
   get defaultPolylineProps(): PolylineProps {
     return this._defaultPolylineProps;
   }
 
   set defaultPolylineProps(value: PolylineProps) {
     this._defaultPolylineProps = value;
+  }
+
+  get defaultWallProps(): WallProps {
+    return this._defaultWallProps;
+  }
+
+  set defaultWallProps(value: WallProps) {
+    this._defaultWallProps = value;
   }
 
   get defaultPointProps(): PointProps {
@@ -80,6 +108,13 @@ export class EditablePolygon extends AcEntity {
     this._defaultPointProps = value;
   }
 
+  public get polygonOptions(): PolygonEditOptions {
+    return this._polygonOptions;
+  }
+  public set polygonOptions(value: PolygonEditOptions) {
+    this._polygonOptions = value;
+  }
+
   get enableEdit() {
     return this._enableEdit;
   }
@@ -90,6 +125,9 @@ export class EditablePolygon extends AcEntity {
       point.show = value;
       this.updatePointsLayer(false, point);
     });
+    this.cylinderWidget.show = value;
+    this.widgetLayer.update(this.cylinderWidget, this.cylinderWidget.getId())
+    // this.renderWidgets();
   }
 
   private createFromExisting(positions: Cartesian3[]) {
@@ -181,6 +219,23 @@ export class EditablePolygon extends AcEntity {
     });
   }
 
+  private renderWall() {
+
+    this.wall && this.wallsLayer.remove(this.wall.getId());
+    const realPositions = this.getAllRealPositions();
+    realPositions.push(realPositions[0].clone());
+
+    this.wall = new EditWall(this.id, realPositions, this.height, this.defaultWallProps);
+    this.wallsLayer.update(this.wall, this.wall.getId());
+  }
+
+  // TODO: only render when sketch finished and in edit mode
+  private renderWidgets() {
+    this.cylinderWidget && this.widgetLayer.remove(this.cylinderWidget.getId());
+    this.cylinderWidget = new EditCylinder(this.id, this.getTopCentrePoint(), 1, 1, 5);
+    this.widgetLayer.update(this.cylinderWidget, this.cylinderWidget.getId());
+  }
+
   addPointFromExisting(position: Cartesian3) {
     const newPoint = new EditPoint(this.id, position, this.defaultPointProps);
     this.positions.push(newPoint);
@@ -207,7 +262,7 @@ export class EditablePolygon extends AcEntity {
   }
 
   movePointFinish(editPoint: EditPoint) {
-    if (this.polygonOptions.clampHeightTo3D) {
+    if (this.polygonEditOptions.clampHeightTo3D) {
       editPoint.props.disableDepthTestDistance = Number.POSITIVE_INFINITY;
       this.updatePointsLayer(false, editPoint);
     }
@@ -216,7 +271,7 @@ export class EditablePolygon extends AcEntity {
   movePoint(toPosition: Cartesian3, editPoint: EditPoint) {
     editPoint.setPosition(toPosition);
     if (this.doneCreation) {
-      if (editPoint.props.disableDepthTestDistance && this.polygonOptions.clampHeightTo3D) {
+      if (editPoint.props.disableDepthTestDistance && this.polygonEditOptions.clampHeightTo3D) {
         // To avoid bug with pickPosition() on point with disableDepthTestDistance
         editPoint.props.disableDepthTestDistance = undefined;
         return; // ignore first move because the pickPosition() could be wrong
@@ -233,6 +288,7 @@ export class EditablePolygon extends AcEntity {
       const prevRealPoint = this.positions[((pointIndex - 2) + pointsCount) % pointsCount];
       this.updateMiddleVirtualPoint(nextVirtualPoint, editPoint, nextRealPoint);
       this.updateMiddleVirtualPoint(prevVirtualPoint, editPoint, prevRealPoint);
+      this.renderWidgets();
     }
     this.updatePolygonsLayer();
     this.updatePointsLayer(true, editPoint);
@@ -274,6 +330,8 @@ export class EditablePolygon extends AcEntity {
     this.addAllVirtualEditPoints();
 
     this.renderPolylines();
+    this.polygonOptions.extrudedHeight && this.renderWall();
+    this.renderWidgets();
     if (this.getPointsCount() >= 3) {
       this.polygonsLayer.update(this, this.id);
     }
@@ -284,8 +342,26 @@ export class EditablePolygon extends AcEntity {
     this.removePosition(this.movingPoint); // remove movingPoint
     this.movingPoint = null;
     this.updatePolygonsLayer();
-
+    this.renderWidgets();
     this.addAllVirtualEditPoints();
+  }
+
+  // TODO: look into why material transparency not working on clamped polygon
+  updateHeight(polygonOptions: PolygonEditOptions) {
+    this.polygonOptions = {...this.polygonOptions, ...polygonOptions};
+    this.polygonProps = {...this.polygonProps, ...polygonOptions.polygonProps};
+    // this.polygonsLayer.update(this, this.id); only required when not using polygon callbacks for height and height reference
+    this.renderWall();
+    this.renderWidgets();
+    this.renderPolylines();
+  }
+
+  getHeightReference()
+  {
+    return this.polygonProps.heightReference;
+  }
+  getHeightReferenceCallback() {
+    return new Cesium.CallbackProperty(this.getHeightReference.bind(this), false);
   }
 
   getRealPositions(): Cartesian3[] {
@@ -296,8 +372,30 @@ export class EditablePolygon extends AcEntity {
     return this.positions.filter(position => !position.isVirtualEditPoint() && position !== this.movingPoint);
   }
 
+  getAllRealPoints(): EditPoint[] {
+    return this.positions.filter(position => !position.isVirtualEditPoint());
+  }
+
+  getAllRealPositions(): Cartesian3[] {
+    return this.getAllRealPoints().map(position => position.getPosition());
+  }
+
   getPoints(): EditPoint[] {
     return this.positions.filter(position => position !== this.movingPoint);
+  }
+
+  getVisibility(extrudedPolygon: boolean): boolean {
+    if (this.getHeightReference() === Cesium.HeightReference.NONE && extrudedPolygon) {
+      return true;
+    }
+    if (this.getHeightReference() === Cesium.HeightReference.CLAMP_TO_GROUND && !extrudedPolygon) {
+      return true;
+    }
+    return false;
+  }
+
+  getVisibilityCallback(extrudedPolygon: boolean): Cartesian3[] {
+    return new Cesium.CallbackProperty(() => this.getVisibility(extrudedPolygon), false);
   }
 
   getPositionsHierarchy(): Cartesian3[] {
@@ -309,6 +407,26 @@ export class EditablePolygon extends AcEntity {
     return new Cesium.CallbackProperty(this.getPositionsHierarchy.bind(this), false);
   }
 
+  getMaxHeight(fromWidget: boolean = false): number {
+    if (!fromWidget && this.getHeightReference() === Cesium.HeightReference.CLAMP_TO_GROUND) {
+      return undefined;
+    } 
+    return this.getAllRealPositions()
+      .map(pos => Cesium.Cartographic.fromCartesian(pos).height)
+      .reduce((prev, next) => prev > next ? prev : next, 0) + this.height;
+  }
+
+  getMaxHeightCallback() {
+    return new Cesium.CallbackProperty(this.getMaxHeight.bind(this), false);
+  }
+
+  getTopCentrePoint(): Cartesian3 {
+    const center: Cartesian3 = Cesium.BoundingSphere.fromPoints(this.getAllRealPositions()).center;
+    const topCenter = Cesium.Cartographic.fromCartesian(center);
+    topCenter.height = this.getMaxHeight(true);
+    return Cesium.Cartographic.toCartesian(topCenter);
+  }
+
   private removePosition(point: EditPoint) {
     const index = this.positions.findIndex((p) => p === point);
     if (index < 0) {
@@ -318,7 +436,7 @@ export class EditablePolygon extends AcEntity {
     this.pointsLayer.remove(point.getId());
   }
 
-  private updatePolygonsLayer() {
+  public updatePolygonsLayer() {
     if (this.getPointsCount() >= 3) {
       this.polygonsLayer.update(this, this.id);
     }
@@ -327,12 +445,24 @@ export class EditablePolygon extends AcEntity {
   private updatePointsLayer(renderPolylines = true, ...points: EditPoint[]) {
     if (renderPolylines) {
       this.renderPolylines();
+      this.polygonOptions.extrudedHeight && this.renderWall();
+      // this.renderWidgets();
     }
     points.forEach(p => this.pointsLayer.update(p, p.getId()));
   }
 
   dispose() {
+    // TODO: Does this remove both the extruded and none extruded polygon?
     this.polygonsLayer.remove(this.id);
+
+    if (this.wall) {
+      this.wallsLayer.remove(this.wall.getId());
+      this.wall = undefined;
+    }
+    if (this.cylinderWidget) {
+      this.widgetLayer.remove(this.cylinderWidget.getId());
+      this.cylinderWidget = undefined;
+    }
 
     this.positions.forEach(editPoint => {
       this.pointsLayer.remove(editPoint.getId());

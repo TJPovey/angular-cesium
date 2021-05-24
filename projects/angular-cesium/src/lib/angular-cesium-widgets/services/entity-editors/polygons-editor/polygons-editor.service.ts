@@ -1,3 +1,4 @@
+import { EditCylinder } from './../../../models/edit-cylinder';
 import { publish, tap } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
 import { CesiumService } from '../../../../angular-cesium/services/cesium/cesium.service';
@@ -29,6 +30,7 @@ export const DEFAULT_POLYGON_OPTIONS: PolygonEditOptions = {
   dragPointEvent: CesiumEvent.LEFT_CLICK_DRAG,
   dragShapeEvent: CesiumEvent.LEFT_CLICK_DRAG,
   allowDrag: true,
+  extrudedHeight: 0,
   pointProps: {
     color: Cesium.Color.WHITE.withAlpha(0.95),
     outlineColor: Cesium.Color.BLACK.withAlpha(0.2),
@@ -44,6 +46,7 @@ export const DEFAULT_POLYGON_OPTIONS: PolygonEditOptions = {
     fill: true,
     classificationType: Cesium.ClassificationType.BOTH,
     zIndex: 0,
+    heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
   },
   polylineProps: {
     material: () => Cesium.Color.WHITE,
@@ -51,6 +54,9 @@ export const DEFAULT_POLYGON_OPTIONS: PolygonEditOptions = {
     clampToGround: false,
     zIndex: 0,
     classificationType: Cesium.ClassificationType.BOTH,
+  },
+  wallProps: {
+    outline: true,
   },
   clampHeightTo3D: false,
   clampHeightTo3DOptions: {
@@ -197,7 +203,6 @@ export class PolygonsEditorService {
     if (this.cesiumScene.pickPositionSupported) {
 
       let pickedObjects = this.cesiumScene.drillPick(mousePosition, 10, 10);
-      console.log(pickedObjects);
       if (pickedObjects.length > 0) {
 
         // Seperate sketch and none sketch elements
@@ -486,6 +491,15 @@ export class PolygonsEditorService {
       pickFilter: entity => id === entity.editedEntityId,
     });
 
+    const widgetDragRegistration = this.mapEventsManager.register({
+      event: CesiumEvent.LEFT_CLICK_DRAG,
+      entityType: EditCylinder,
+      pick: PickOptions.PICK_FIRST,
+      pickConfig: options.pickConfiguration,
+      priority,
+      pickFilter: entity => id === entity.editedEntityId,
+    });
+
     let shapeDragRegistration;
     if (options.allowDrag) {
       shapeDragRegistration = this.mapEventsManager.register({
@@ -508,9 +522,14 @@ export class PolygonsEditorService {
     });
 
     pointDragRegistration.pipe(
-      tap(({ movement: { drop } }) => this.polygonsManager.get(id).enableEdit && this.cameraService.enableInputs(drop)))
+      tap(({ movement: { drop } }) => 
+      this.polygonsManager.get(id).enableEdit && this.cameraService.enableInputs(drop))
+      )
       .subscribe(({ movement: { endPosition, drop }, entities }) => {
         // const position = this.screenToPosition(endPosition, options.clampHeightTo3D, options.clampHeightTo3DOptions);
+
+
+
         const position = this.getRayPosition(endPosition);
         if (!position) {
           return;
@@ -531,9 +550,38 @@ export class PolygonsEditorService {
           positions: this.getPositions(id),
           points: this.getPoints(id),
         });
-
         // this.clampPointsDebounced(id, options.clampHeightTo3D, options.clampHeightTo3DOptions);
       });
+
+      widgetDragRegistration.pipe(
+        tap(({ movement: { drop } }) => 
+        this.polygonsManager.get(id).enableEdit && this.cameraService.enableInputs(drop)))
+        .subscribe(({ movement: { startPosition, endPosition } }) => {
+          
+          const polygon = this.polygonsManager.get(id);
+          let deltaY = (startPosition.y - endPosition.y) * 0.009;
+          polygon.height += deltaY;
+
+          // TODO: look into classification
+          const updateHeight = {
+            id,
+            polygonOptions: {
+              extrudedHeight: polygon.height,
+              polygonProps: {
+                heightReference: Cesium.HeightReference.NONE,
+              }
+            },
+            editMode: EditModes.EDIT,
+            editAction: EditActions.TRANSFORM,
+          }
+          
+          this.updateSubject.next(updateHeight);
+          editSubject.next({
+            ...updateHeight,
+          });
+
+        });
+
 
     if (shapeDragRegistration) {
       shapeDragRegistration
@@ -592,7 +640,7 @@ export class PolygonsEditorService {
       //this.clampPoints(id, options.clampHeightTo3D, options.clampHeightTo3DOptions);
     });
 
-    const observables = [pointDragRegistration, pointRemoveRegistration];
+    const observables = [pointDragRegistration, pointRemoveRegistration, widgetDragRegistration];
     if (shapeDragRegistration) {
       observables.push(shapeDragRegistration);
     }
@@ -613,8 +661,13 @@ export class PolygonsEditorService {
     polygonOptions.pointProps = { ...DEFAULT_POLYGON_OPTIONS.pointProps, ...options.pointProps};
     polygonOptions.polygonProps = {...DEFAULT_POLYGON_OPTIONS.polygonProps, ...options.polygonProps};
     polygonOptions.polylineProps = {...DEFAULT_POLYGON_OPTIONS.polylineProps, ...options.polylineProps};
+    polygonOptions.wallProps = {...DEFAULT_POLYGON_OPTIONS.wallProps, ...options.wallProps};
     polygonOptions.clampHeightTo3DOptions = { ...DEFAULT_POLYGON_OPTIONS.clampHeightTo3DOptions, ...options.clampHeightTo3DOptions};
-    console.log(polygonOptions);
+    
+    // if (!polygonOptions.extrudedHeight || polygonOptions.extrudedHeight === 0) {
+    //   polygonOptions.extrudedHeight = undefined;
+    // }
+
     if (options.clampHeightTo3D) {
       if (!this.cesiumScene.pickPositionSupported || !this.cesiumScene.clampToHeightSupported) {
         throw new Error(`Cesium pickPosition and clampToHeight must be supported to use clampHeightTo3D`);
