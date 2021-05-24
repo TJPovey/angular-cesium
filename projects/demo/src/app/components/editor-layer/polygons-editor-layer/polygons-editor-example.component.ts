@@ -1,3 +1,4 @@
+import { WallProps } from './../../../../../../angular-cesium/src/lib/angular-cesium-widgets/models/wall-edit-options';
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 // tslint:disable-next-line:max-line-length
 import {
@@ -44,11 +45,12 @@ export class PolygonsEditorExampleComponent implements OnInit {
 
   startEdit3D() {
 
-    if (this.editing$) {
-      this.stopEdit();
-    }
+    // if (this.editing$) {
+    //   this.stopEdit();
+    // }
     this.editing$ = this.polygonsEditor.create({
       clampHeightTo3D: true,
+      extrudedHeight: 0,
       clampHeightTo3DOptions: {
         clampMostDetailed: true,
         clampToTerrain: false,
@@ -59,18 +61,22 @@ export class PolygonsEditorExampleComponent implements OnInit {
         heightReference: 0,
       },
       polygonProps: {
-        extrudedHeight: 150,
-        extrudedHeightReference: 0,
-        height: 139,
-        heightReference: 0,
-        closeBottom: false,
-        material: new Cesium.Color(0, 0, 0, 0.3),
+        material: new Cesium.Color(0, 0, 1, 0.3),
+        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
       },
       polylineProps: {
         material: () => Cesium.Color.BLACK,
         width: 2.0,
+      },
+      wallProps: {
+        outline: true,
+        outlineWidth: 2.0,
+        outlineColor: Cesium.Color.BLACK,
+        material: () => Cesium.Color.RED,
       }
     });
+
+    
   }
 
   stopEdit() {

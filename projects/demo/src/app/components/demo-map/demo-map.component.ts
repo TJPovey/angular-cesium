@@ -2,7 +2,7 @@ import { MapsManagerService } from './../../../../../angular-cesium/src/lib/angu
 import { CesiumService } from './../../../../../angular-cesium/src/lib/angular-cesium/services/cesium/cesium.service';
 import { MapTerrainProviderOptions } from './../../../../../angular-cesium/src/lib/angular-cesium/models/map-terrain-provider-options.enum';
 import { AfterViewInit, Component, ViewChild } from '@angular/core';
-import { AcMapComponent, MapLayerProviderOptions, SceneMode, ViewerConfiguration } from 'angular-cesium';
+import { AcMapComponent, CesiumEvent, MapEventsManagerService, MapLayerProviderOptions, PickOptions, SceneMode, ViewerConfiguration } from 'angular-cesium';
 import { AppSettingsService } from '../../services/app-settings-service/app-settings-service';
 import { Viewer } from 'cesium';
 
@@ -61,6 +61,16 @@ export class DemoMapComponent implements AfterViewInit {
       })
       .otherwise((error) => {
         console.log(error);
+      })
+
+
+      const test = this.map.getMapEventsManager().register({
+        event: CesiumEvent.LEFT_CLICK,
+        pick: PickOptions.PICK_FIRST,
+      });
+
+      test.subscribe((entity) => {
+        console.log(entity);
       })
   }
 }
