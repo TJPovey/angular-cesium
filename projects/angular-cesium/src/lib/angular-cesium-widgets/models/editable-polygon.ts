@@ -12,6 +12,7 @@ import { PolylineProps } from './polyline-edit-options';
 import { defaultLabelProps, LabelProps } from './label-props';
 import { EditWall } from './edit-wall';
 import { WallProps } from './wall-edit-options';
+import polylabel from 'polylabel';
 
 export class EditablePolygon extends AcEntity {
   private positions: EditPoint[] = [];
@@ -126,8 +127,7 @@ export class EditablePolygon extends AcEntity {
       this.updatePointsLayer(false, point);
     });
     this.cylinderWidget.show = value;
-    this.widgetLayer.update(this.cylinderWidget, this.cylinderWidget.getId())
-    // this.renderWidgets();
+    this.widgetLayer.update(this.cylinderWidget, this.cylinderWidget.getId());
   }
 
   private createFromExisting(positions: Cartesian3[]) {
@@ -266,6 +266,7 @@ export class EditablePolygon extends AcEntity {
       editPoint.props.disableDepthTestDistance = Number.POSITIVE_INFINITY;
       this.updatePointsLayer(false, editPoint);
     }
+    this.renderWidgets();
   }
 
   movePoint(toPosition: Cartesian3, editPoint: EditPoint) {
@@ -288,7 +289,8 @@ export class EditablePolygon extends AcEntity {
       const prevRealPoint = this.positions[((pointIndex - 2) + pointsCount) % pointsCount];
       this.updateMiddleVirtualPoint(nextVirtualPoint, editPoint, nextRealPoint);
       this.updateMiddleVirtualPoint(prevVirtualPoint, editPoint, prevRealPoint);
-      this.renderWidgets();
+      this.cylinderWidget.show = false;
+      this.widgetLayer.update(this.cylinderWidget, this.cylinderWidget.getId());
     }
     this.updatePolygonsLayer();
     this.updatePointsLayer(true, editPoint);
@@ -421,10 +423,12 @@ export class EditablePolygon extends AcEntity {
   }
 
   getTopCentrePoint(): Cartesian3 {
-    const center: Cartesian3 = Cesium.BoundingSphere.fromPoints(this.getAllRealPositions()).center;
-    const topCenter = Cesium.Cartographic.fromCartesian(center);
-    topCenter.height = this.getMaxHeight(true);
-    return Cesium.Cartographic.toCartesian(topCenter);
+    const positions = this.getAllRealPositions().map((pos) => {
+      const carto = Cesium.Cartographic.fromCartesian(pos);
+      return [carto.longitude, carto.latitude];
+    });
+    const centre: number[] = polylabel([positions], 1);
+    return Cesium.Cartesian3.fromRadians(centre[0], centre[1], this.getMaxHeight(true));
   }
 
   private removePosition(point: EditPoint) {
@@ -446,7 +450,6 @@ export class EditablePolygon extends AcEntity {
     if (renderPolylines) {
       this.renderPolylines();
       this.polygonOptions.extrudedHeight && this.renderWall();
-      // this.renderWidgets();
     }
     points.forEach(p => this.pointsLayer.update(p, p.getId()));
   }
