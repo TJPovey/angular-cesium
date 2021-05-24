@@ -220,13 +220,15 @@ export class EditablePolygon extends AcEntity {
   }
 
   private renderWall() {
-
     this.wall && this.wallsLayer.remove(this.wall.getId());
-    const realPositions = this.getAllRealPositions();
-    realPositions.push(realPositions[0].clone());
-
-    this.wall = new EditWall(this.id, realPositions, this.height, this.defaultWallProps);
-    this.wallsLayer.update(this.wall, this.wall.getId());
+    this.wall = undefined;
+    if (this.height > 0) {
+      const realPositions = this.getAllRealPositions();
+      realPositions.push(realPositions[0].clone());
+  
+      this.wall = new EditWall(this.id, realPositions, this.height, this.defaultWallProps);
+      this.wallsLayer.update(this.wall, this.wall.getId());
+    }
   }
 
   // TODO: only render when sketch finished and in edit mode
@@ -332,7 +334,7 @@ export class EditablePolygon extends AcEntity {
     this.addAllVirtualEditPoints();
 
     this.renderPolylines();
-    this.polygonOptions.extrudedHeight && this.renderWall();
+    this.renderWall();
     this.renderWidgets();
     if (this.getPointsCount() >= 3) {
       this.polygonsLayer.update(this, this.id);
@@ -352,6 +354,7 @@ export class EditablePolygon extends AcEntity {
   updateHeight(polygonOptions: PolygonEditOptions) {
     this.polygonOptions = {...this.polygonOptions, ...polygonOptions};
     this.polygonProps = {...this.polygonProps, ...polygonOptions.polygonProps};
+    this.height = this.polygonOptions.extrudedHeight;
     // this.polygonsLayer.update(this, this.id); only required when not using polygon callbacks for height and height reference
     this.renderWall();
     this.renderWidgets();
@@ -449,13 +452,12 @@ export class EditablePolygon extends AcEntity {
   private updatePointsLayer(renderPolylines = true, ...points: EditPoint[]) {
     if (renderPolylines) {
       this.renderPolylines();
-      this.polygonOptions.extrudedHeight && this.renderWall();
+      this.renderWall();
     }
     points.forEach(p => this.pointsLayer.update(p, p.getId()));
   }
 
   dispose() {
-    // TODO: Does this remove both the extruded and none extruded polygon?
     this.polygonsLayer.remove(this.id);
 
     if (this.wall) {
