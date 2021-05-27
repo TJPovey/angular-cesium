@@ -1,3 +1,4 @@
+import { CesiumService } from './../../../../angular-cesium/services/cesium/cesium.service';
 import { Injectable } from '@angular/core';
 import { EditablePolygon } from '../../../models/editable-polygon';
 import { Cartesian3 } from '../../../../angular-cesium/models/cartesian3';
@@ -11,7 +12,7 @@ export class PolygonsManagerService {
 
   createEditablePolygon(id: string, editPolygonsLayer: AcLayerComponent, editPointsLayer: AcLayerComponent,
                         editPolylinesLayer: AcLayerComponent, editWallsLayer: AcLayerComponent, widgetsLayer: AcLayerComponent, 
-                        coordinateConverter: CoordinateConverter, polygonOptions?: PolygonEditOptions, positions?: Cartesian3[]) {
+                        coordinateConverter: CoordinateConverter, cesiumService: CesiumService, polygonOptions?: PolygonEditOptions, positions?: Cartesian3[]) {
     const editablePolygon = new EditablePolygon(
       id,
       editPolygonsLayer,
@@ -20,9 +21,9 @@ export class PolygonsManagerService {
       editWallsLayer,
       widgetsLayer,
       coordinateConverter,
+      cesiumService,
       polygonOptions,
       positions);
-      console.log("props: ", polygonOptions.polygonProps);
     this.polygons.set(id, editablePolygon
     );
   }

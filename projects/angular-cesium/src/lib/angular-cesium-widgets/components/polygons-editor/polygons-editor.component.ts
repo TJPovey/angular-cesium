@@ -25,7 +25,7 @@ import { EditPolyline } from '../../models/edit-polyline';
         props="{
         positions: polyline.getPositionsCallbackProperty(),
         width: polyline.props.width,
-        material: polyline.props.material(),
+        material: polyline.props.material,
         clampToGround: polyline.props.clampToGround,
         zIndex: polyline.props.zIndex,
         classificationType: polyline.props.classificationType,
@@ -59,7 +59,7 @@ import { EditPolyline } from '../../models/edit-polyline';
         outline: wall.props.outline,
         outlineColor: wall.props.outlineColor,
         outlineWidth: wall.props.outlineWidth,
-        material: wall.props.material(),
+        material: wall.props.material,
       }">
       </ac-wall-desc>
     </ac-layer>
@@ -221,7 +221,6 @@ export class PolygonsEditorComponent implements OnDestroy {
   handleCreateUpdates(update: PolygonEditUpdate) {
     switch (update.editAction) {
       case EditActions.INIT: {
-        console.log(update.polygonOptions);
         this.polygonsManager.createEditablePolygon(
           update.id,
           this.editPolygonsLayer,
@@ -230,6 +229,7 @@ export class PolygonsEditorComponent implements OnDestroy {
           this.editWallsLayer,
           this.widgetsLayer,
           this.coordinateConverter,
+          this.cesiumService,
           update.polygonOptions,
         );
         break;
@@ -300,6 +300,7 @@ export class PolygonsEditorComponent implements OnDestroy {
           this.editWallsLayer,
           this.widgetsLayer,
           this.coordinateConverter,
+          this.cesiumService,
           update.polygonOptions,
           update.positions,
         );
@@ -372,6 +373,14 @@ export class PolygonsEditorComponent implements OnDestroy {
           polygon.enableEdit = true;
           polygon.updateHeight(update.polygonOptions);
           this.renderEditLabels(polygon, update);
+        }
+        break;
+      }
+      case EditActions.SET_MATERIAL: {
+        const polygon = this.polygonsManager.get(update.id);
+        if (polygon) {
+          polygon.enableEdit = true;
+          polygon.updateDisplay(update.polygonDisplay);
         }
         break;
       }

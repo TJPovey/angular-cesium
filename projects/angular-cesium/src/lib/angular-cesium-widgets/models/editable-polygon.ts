@@ -1,3 +1,4 @@
+import { CesiumService } from './../../angular-cesium/services/cesium/cesium.service';
 import { EditCylinder } from './edit-cylinder';
 import { AcEntity } from '../../angular-cesium/models/ac-entity';
 import { EditPoint } from './edit-point';
@@ -6,7 +7,7 @@ import { AcLayerComponent } from '../../angular-cesium/components/ac-layer/ac-la
 import { Cartesian3 } from '../../angular-cesium/models/cartesian3';
 import { CoordinateConverter } from '../../angular-cesium/services/coordinate-converter/coordinate-converter.service';
 import { GeoUtilsService } from '../../angular-cesium/services/geo-utils/geo-utils.service';
-import { PolygonEditOptions, PolygonProps } from './polygon-edit-options';
+import { PolygonEditOptions, PolygonProps, PolygonDisplay } from './polygon-edit-options';
 import { PointProps } from './point-edit-options';
 import { PolylineProps } from './polyline-edit-options';
 import { defaultLabelProps, LabelProps } from './label-props';
@@ -17,7 +18,7 @@ import polylabel from 'polylabel';
 export class EditablePolygon extends AcEntity {
   private positions: EditPoint[] = [];
   private polylines: EditPolyline[] = [];
-  private wall: EditWall;
+  public wall: EditWall;
   private cylinderWidget: EditCylinder;
   private movingPoint: EditPoint;
   private doneCreation = false;
@@ -38,6 +39,7 @@ export class EditablePolygon extends AcEntity {
               private wallsLayer: AcLayerComponent,
               private widgetLayer: AcLayerComponent,
               private coordinateConverter: CoordinateConverter,
+              private cesiumService: CesiumService,
               private polygonEditOptions: PolygonEditOptions,
               positions?: Cartesian3[]) {
     super();
@@ -176,7 +178,22 @@ export class EditablePolygon extends AcEntity {
 
   private setMiddleVirtualPoint(firstP: EditPoint, secondP: EditPoint): EditPoint {
     const midPointCartesian3 = Cesium.Cartesian3.lerp(firstP.getPosition(), secondP.getPosition(), 0.5, new Cesium.Cartesian3());
-    const midPoint = new EditPoint(this.id, midPointCartesian3, this.defaultPointProps);
+    let midPoint: EditPoint;
+
+    if (this.height <= 0) {
+      let updatedPoint = this.cesiumService.getScene().clampToHeight(midPointCartesian3);
+      if (!Cesium.defined(updatedPoint)) {
+        const cart = Cesium.Cartographic.fromCartesian(midPointCartesian3);
+        const height = this.cesiumService.getScene().globe.getHeight(cart);
+        cart.height = height;
+        updatedPoint = Cesium.Cartographic.toCartesian(cart);
+      }
+      midPoint = new EditPoint(this.id, updatedPoint, this.defaultPointProps);
+    }
+    else {
+      midPoint = new EditPoint(this.id, midPointCartesian3, this.defaultPointProps);
+    }
+
     midPoint.setVirtualEditPoint(true);
 
     const firstIndex = this.positions.indexOf(firstP);
@@ -186,7 +203,20 @@ export class EditablePolygon extends AcEntity {
 
   private updateMiddleVirtualPoint(virtualEditPoint: EditPoint, prevPoint: EditPoint, nextPoint: EditPoint) {
     const midPointCartesian3 = Cesium.Cartesian3.lerp(prevPoint.getPosition(), nextPoint.getPosition(), 0.5, new Cesium.Cartesian3());
-    virtualEditPoint.setPosition(midPointCartesian3);
+
+    if (this.height > 0) {
+      virtualEditPoint.setPosition(midPointCartesian3);
+      return;
+    }
+
+    let updatedPoint = this.cesiumService.getScene().clampToHeight(midPointCartesian3);
+    if (!Cesium.defined(updatedPoint)) {
+      const cart = Cesium.Cartographic.fromCartesian(midPointCartesian3);
+      const height = this.cesiumService.getScene().globe.getHeight(cart);
+      cart.height = height;
+      updatedPoint = Cesium.Cartographic.toCartesian(cart);
+    }
+    virtualEditPoint.setPosition(updatedPoint);
   }
 
   changeVirtualPointToRealPoint(point: EditPoint) {
@@ -336,9 +366,7 @@ export class EditablePolygon extends AcEntity {
     this.renderPolylines();
     this.renderWall();
     this.renderWidgets();
-    if (this.getPointsCount() >= 3) {
-      this.polygonsLayer.update(this, this.id);
-    }
+    this.updatePolygonsLayer()
   }
 
   addLastPoint(position: Cartesian3) {
@@ -350,7 +378,6 @@ export class EditablePolygon extends AcEntity {
     this.addAllVirtualEditPoints();
   }
 
-  // TODO: look into why material transparency not working on clamped polygon
   updateHeight(polygonOptions: PolygonEditOptions) {
     this.polygonOptions = {...this.polygonOptions, ...polygonOptions};
     this.polygonProps = {...this.polygonProps, ...polygonOptions.polygonProps};
@@ -359,6 +386,25 @@ export class EditablePolygon extends AcEntity {
     this.renderWall();
     this.renderWidgets();
     this.renderPolylines();
+  }
+
+  updateDisplay(polygonDisplay: PolygonDisplay) {
+    this.polygonProps.material = polygonDisplay.polygonMaterial;
+    this.defaultWallProps.material = polygonDisplay.wallMaterial;
+    this.defaultWallProps.outlineColor = polygonDisplay.polylineMaterial;
+
+    if (this.wall) {
+      this.wall.props = {...this.wall.props, ...this.defaultWallProps};
+      this.wallsLayer.update(this.wall, this.wall.getId());
+    } 
+
+    this.defaultPolylineProps.material = polygonDisplay.polylineMaterial;
+    this.polylines.forEach((polyline) => {
+      polyline.props = {...polyline.props, ...this.defaultPolylineProps}
+      this.polylinesLayer.update(polyline, polyline.getId());
+    });
+    
+    this.updatePolygonsLayer();
   }
 
   getHeightReference()
@@ -383,6 +429,11 @@ export class EditablePolygon extends AcEntity {
 
   getAllRealPositions(): Cartesian3[] {
     return this.getAllRealPoints().map(position => position.getPosition());
+  }
+
+  // TODO: required?
+  getAllVirtualPoints(): EditPoint[] {
+    return this.positions.filter(position => position.isVirtualEditPoint() && position !== this.movingPoint);
   }
 
   getPoints(): EditPoint[] {

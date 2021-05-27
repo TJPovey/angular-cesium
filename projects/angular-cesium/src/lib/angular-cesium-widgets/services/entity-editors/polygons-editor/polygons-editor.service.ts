@@ -17,7 +17,7 @@ import { Cartesian3 } from '../../../../angular-cesium/models/cartesian3';
 import { PolygonsManagerService } from './polygons-manager.service';
 import { PolygonEditorObservable } from '../../../models/polygon-editor-observable';
 import { EditablePolygon } from '../../../models/editable-polygon';
-import { PolygonEditOptions, PolygonProps } from '../../../models/polygon-edit-options';
+import { PolygonDisplay, PolygonEditOptions, PolygonProps } from '../../../models/polygon-edit-options';
 import { ClampTo3DOptions } from '../../../models/polyline-edit-options';
 import { PointProps } from '../../../models/point-edit-options';
 import { LabelProps } from '../../../models/label-props';
@@ -49,14 +49,17 @@ export const DEFAULT_POLYGON_OPTIONS: PolygonEditOptions = {
     heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
   },
   polylineProps: {
-    material: () => Cesium.Color.WHITE,
+    material: Cesium.Color.WHITE,
     width: 3,
     clampToGround: false,
     zIndex: 0,
     classificationType: Cesium.ClassificationType.BOTH,
   },
   wallProps: {
+    material: Cesium.Color.CORNFLOWERBLUE.withAlpha(0.4),
     outline: true,
+    outlineColor: Cesium.Color.WHITE,
+    outlineWidth: 3,
   },
   clampHeightTo3D: false,
   clampHeightTo3DOptions: {
@@ -162,6 +165,37 @@ export class PolygonsEditorService {
     }
   }
 
+  private clampVirtual(id) {
+    const polygon = this.polygonsManager.get(id);
+    let points = polygon.getAllVirtualPoints();
+    points.forEach((point) => {
+      //TODO: 
+      let updatedPoint = this.cesiumScene.clampToHeight(point.getPosition());
+      if (!Cesium.defined(updatedPoint)) {
+        const cart = Cesium.Cartographic.fromCartesian(point.getPosition());
+        const height = this.cesiumScene.globe.getHeight(cart);
+        cart.height = height;
+        updatedPoint = Cesium.Cartographic.toCartesian(cart);
+      }
+      point.setPosition(updatedPoint);
+    });
+  }
+
+  private updateVirtualPoints(id) {
+    const polygon = this.polygonsManager.get(id);
+    const currentPoints = polygon.getPoints();
+    currentPoints.forEach((pos, index) => {
+
+      if (pos.isVirtualEditPoint()) {
+        const prevIndex = (index - 1) % (currentPoints.length);
+        const nextIndex = (index + 1) % (currentPoints.length);
+        const midPointCartesian3 = Cesium.Cartesian3.lerp(currentPoints[prevIndex].getPosition(), currentPoints[nextIndex].getPosition(), 0.5, new Cesium.Cartesian3());
+        pos.setPosition(midPointCartesian3);
+      }
+      // const nextPoint = currentPoints[nextIndex];
+    });
+  }
+
   private screenToPosition(cartesian2, clampHeightTo3D: boolean, { clampToHeightPickWidth, clampToTerrain }: ClampTo3DOptions) {
     const cartesian3 = this.coordinateConverter.screenToCartesian3(cartesian2);
 
@@ -188,6 +222,7 @@ export class PolygonsEditorService {
     return cartesian3;
   }
 
+  // TODO: use ray or clamp to height?
   public getRayPosition(
     mousePosition
     ): Cartesian3 {
@@ -523,12 +558,10 @@ export class PolygonsEditorService {
 
     pointDragRegistration.pipe(
       tap(({ movement: { drop } }) => 
-      this.polygonsManager.get(id).enableEdit && this.cameraService.enableInputs(drop))
+      this.polygonsManager.get(id).enableEdit && this.cameraService.enableInputs(drop, 400))
       )
       .subscribe(({ movement: { endPosition, drop }, entities }) => {
         // const position = this.screenToPosition(endPosition, options.clampHeightTo3D, options.clampHeightTo3DOptions);
-
-
 
         const position = this.getRayPosition(endPosition);
         if (!position) {
@@ -550,12 +583,16 @@ export class PolygonsEditorService {
           positions: this.getPositions(id),
           points: this.getPoints(id),
         });
+
+        if (this.polygonsManager.get(id).height <= 0) {
+          this.clampVirtual(id);
+        }
         // this.clampPointsDebounced(id, options.clampHeightTo3D, options.clampHeightTo3DOptions);
       });
 
       widgetDragRegistration.pipe(
         tap(({ movement: { drop } }) => 
-        this.polygonsManager.get(id).enableEdit && this.cameraService.enableInputs(drop)))
+        this.polygonsManager.get(id).enableEdit && this.cameraService.enableInputs(drop, 400)))
         .subscribe(({ movement: { startPosition, endPosition } }) => {
           
           const polygon = this.polygonsManager.get(id);
@@ -579,13 +616,23 @@ export class PolygonsEditorService {
           editSubject.next({
             ...updateHeight,
           });
+          if (updatedHeight > 0) {
+            this.updateVirtualPoints(id);
+          }
+          else {
+            // TODO: why won't deboucne work
+            // timeout required as point will clamp to top of wall otherwise
+            setTimeout(() => {
+              this.clampVirtual(id)
+            }, 1);
+          }
 
         });
 
 
     if (shapeDragRegistration) {
       shapeDragRegistration
-        .pipe(tap(({ movement: { drop } }) => this.polygonsManager.get(id).enableEdit && this.cameraService.enableInputs(drop)))
+        .pipe(tap(({ movement: { drop } }) => this.polygonsManager.get(id).enableEdit && this.cameraService.enableInputs(drop, 400)))
         .subscribe(({ movement: { startPosition, endPosition, drop }, entities }) => {
           // const endDragPosition = this.screenToPosition(endPosition, false, options.clampHeightTo3DOptions);
           const endDragPosition = this.getRayPosition(endPosition);
@@ -747,6 +794,15 @@ export class PolygonsEditorService {
         editMode: EditModes.CREATE_OR_EDIT,
         editAction: EditActions.UPDATE_EDIT_LABELS,
         updateLabels: labels,
+      });
+    };
+
+    observableToExtend.updateDisplay = (display: PolygonDisplay) => {
+      this.updateSubject.next({
+        id,
+        editMode: EditModes.EDIT,
+        editAction: EditActions.SET_MATERIAL,
+        polygonDisplay: display,
       });
     };
 
