@@ -71,6 +71,6 @@ export class DemoMapComponent implements AfterViewInit {
 
       test.subscribe((entity) => {
         console.log(entity);
-      })
+      });
   }
 }

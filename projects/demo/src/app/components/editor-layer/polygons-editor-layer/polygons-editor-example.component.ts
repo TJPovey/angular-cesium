@@ -1,3 +1,4 @@
+import { PolygonEditOptions, PolygonDisplay } from './../../../../../../angular-cesium/src/lib/angular-cesium-widgets/models/polygon-edit-options';
 import { WallProps } from './../../../../../../angular-cesium/src/lib/angular-cesium-widgets/models/wall-edit-options';
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 // tslint:disable-next-line:max-line-length
@@ -61,22 +62,31 @@ export class PolygonsEditorExampleComponent implements OnInit {
         heightReference: 0,
       },
       polygonProps: {
-        material: new Cesium.Color(0, 0, 1, 0.3),
+        // material: new Cesium.Color(0, 0, 1, 0.3),
         heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
       },
       polylineProps: {
-        material: () => Cesium.Color.BLACK,
+        // material: Cesium.Color.BLACK,
         width: 2.0,
       },
       wallProps: {
         outline: true,
         outlineWidth: 2.0,
-        outlineColor: Cesium.Color.BLACK,
-        material: () => Cesium.Color.RED,
+        // outlineColor: Cesium.Color.BLACK,
+        // material: Cesium.Color.RED,
       }
     });
+  }
 
-    
+  updateMaterial() {
+
+    let options: PolygonDisplay = {
+      polygonMaterial: Cesium.Color.fromRandom({alpha : 1.0}),
+      wallMaterial: Cesium.Color.fromRandom({alpha : 1.0}),
+      polylineMaterial: Cesium.Color.fromRandom({alpha : 1.0}),
+    }
+
+    this.editing$.updateDisplay(options);
   }
 
   stopEdit() {
