@@ -129,7 +129,15 @@ export class CameraService {
   /**
    * Sets if the camera receives inputs
    */
-  enableInputs(inputs: boolean): void {
+  enableInputs(inputs: boolean, timeout?: number): void {
+    if (inputs && timeout) {
+      this.screenSpaceCameraController.inertiaSpin = 0;
+      setTimeout(() => { 
+        this.screenSpaceCameraController.inertiaSpin = 0.9;
+        this.screenSpaceCameraController.enableInputs = inputs;
+      }, timeout);
+      return;
+    } 
     this.screenSpaceCameraController.enableInputs = inputs;
   }
 
