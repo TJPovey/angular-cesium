@@ -4,8 +4,8 @@ import { EditorEditOptions } from './editor-edit-options';
 
 
 export interface WallProps {
-  material?: Function;
-  outline: boolean
+  material?: any;
+  outline?: boolean
   outlineColor?: any;
   outlineWidth?: number;
   shadows?: any;

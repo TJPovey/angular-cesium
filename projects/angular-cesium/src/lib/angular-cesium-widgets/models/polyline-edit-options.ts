@@ -10,8 +10,7 @@ export interface ClampTo3DOptions {
 
 export interface PolylineProps {
   width?: number;
-  material?: Function;
-
+  material?: any;
   clampToGround?: boolean;
   zIndex?: number;
   classificationType?: any;

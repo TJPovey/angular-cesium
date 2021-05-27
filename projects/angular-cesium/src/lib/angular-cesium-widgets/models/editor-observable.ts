@@ -1,5 +1,6 @@
 import { Observable } from 'rxjs';
 import { LabelProps } from './label-props';
+import { PolygonDisplay } from './polygon-edit-options';
 
 export class EditorObservable<T> extends Observable<T> {
   dispose: Function;
@@ -9,4 +10,5 @@ export class EditorObservable<T> extends Observable<T> {
   getEditValue: () => T;
   setLabelsRenderFn: (func: (update: T, labels: LabelProps[]) => LabelProps[]) => void;
   updateLabels: (labels: LabelProps[]) => void;
+  updateDisplay: (display: PolygonDisplay) => void;
 }

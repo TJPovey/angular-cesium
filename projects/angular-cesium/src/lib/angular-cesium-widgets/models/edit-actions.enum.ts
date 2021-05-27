@@ -17,4 +17,5 @@ export enum EditActions {
   UPDATE_EDIT_LABELS,
   SET_MANUALLY,
   TRANSFORM,
+  SET_MATERIAL,
 }

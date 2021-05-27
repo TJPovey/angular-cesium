@@ -1,6 +1,12 @@
 import { PolylineEditOptions } from './polyline-edit-options';
 import { WallProps } from './wall-edit-options';
 
+export interface PolygonDisplay {
+  polygonMaterial: any;
+  wallMaterial: any;
+  polylineMaterial: any;
+}
+
 export interface PolygonProps {
   material?: any;
   fill?: boolean;
