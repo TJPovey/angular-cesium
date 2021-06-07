@@ -68,7 +68,7 @@ import { EditVector } from '../../models/edit-vector';
       <ac-vector-desc props="{
         show: getWidgetShow(widget),
         position : widget.getPositionCallback(),
-        length: 15,
+        length: 11,
         direction: widget.direction,
         minimumLengthInPixels: 256,
         color: Cesium.Color.CORNFLOWERBLUE,
