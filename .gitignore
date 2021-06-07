@@ -17,6 +17,8 @@ newrelic_agent.log
 
 # dependencies
 /node_modules
+/lib
+lib
 
 # profiling files
 chrome-profiler-events.json

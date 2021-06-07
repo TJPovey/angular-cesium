@@ -266,6 +266,20 @@ export class EditablePolygon extends AcEntity {
     this.cylinderWidget && this.widgetLayer.remove(this.cylinderWidget.getId());
     this.cylinderWidget = new EditCylinder(this.id, this.getTopCentrePoint(), 1, 1, 5);
     this.widgetLayer.update(this.cylinderWidget, this.cylinderWidget.getId());
+
+    let normal = new Cesium.Cartesian3();
+    this.cesiumService.getScene().globe.ellipsoid.geocentricSurfaceNormal(this.getTopCentrePoint(), normal);
+
+    //TODO: add vector class annd drawer to angular-cesium library
+    this.cesiumService.getViewer().entities.add({
+      position: this.getTopCentrePoint(),
+      vector: {
+        direction: normal,
+        length: 15,
+        minimumLengthInPixels: 256,
+        color: Cesium.Color.CORNFLOWERBLUE
+      }
+    });
   }
 
   addPointFromExisting(position: Cartesian3) {

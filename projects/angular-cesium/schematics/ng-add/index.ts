@@ -171,15 +171,15 @@ function addGlobalsToTarget(targetName: 'test' | 'build') {
 
     addOrAppendGlobal(
       targetOptions.scripts,
-      './node_modules/cesium/Build/Cesium/Cesium.js'
+      './node_modules/@cesiumgs/cesium-analytics/Build/Cesium/Cesium.js'
     );
     addOrAppendGlobal(
       targetOptions.styles,
-      './node_modules/cesium/Build/Cesium/Widgets/widgets.css'
+      './node_modules/@cesiumgs/cesium-analytics/Build/Cesium/Widgets/widgets.css'
     );
     addOrAppendGlobal(targetOptions.assets, {
       glob: '**/*',
-      input: './node_modules/cesium/Build/Cesium',
+      input: './node_modules/@cesiumgs/cesium-analytics/Build/Cesium',
       output: './assets/cesium'
     });
 

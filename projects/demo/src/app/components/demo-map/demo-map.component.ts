@@ -4,7 +4,7 @@ import { MapTerrainProviderOptions } from './../../../../../angular-cesium/src/l
 import { AfterViewInit, Component, ViewChild } from '@angular/core';
 import { AcMapComponent, CesiumEvent, MapEventsManagerService, MapLayerProviderOptions, PickOptions, SceneMode, ViewerConfiguration } from 'angular-cesium';
 import { AppSettingsService } from '../../services/app-settings-service/app-settings-service';
-import { Viewer } from 'cesium';
+import { Viewer, Cesium3DTileset } from '@cesiumgs/cesium-analytics';
 
 @Component({
   selector: 'demo-map',
@@ -56,8 +56,23 @@ export class DemoMapComponent implements AfterViewInit {
     );
     
     tileset.readyPromise
-      .then(() => {
-        this.viewer.zoomTo(tileset);
+      .then((tile: Cesium3DTileset) => {
+        this.viewer.zoomTo(tile);
+        console.log(tile.boundingSphere.center);
+
+        let normal = new Cesium.Cartesian3();
+        this.viewer.scene.globe.ellipsoid.geocentricSurfaceNormal(tile.boundingSphere.center, normal);
+
+        //TODO: add vector class annd drawer to angular-cesium library
+        this.viewer.entities.add({
+          position: tile.boundingSphere.center,
+          vector: {
+            direction: normal,
+            length: 15,
+            minimumLengthInPixels: 256,
+            color: Cesium.Color.CORNFLOWERBLUE
+          }
+        });
       })
       .otherwise((error) => {
         console.log(error);
