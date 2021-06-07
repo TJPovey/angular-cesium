@@ -14,8 +14,8 @@ import { PolygonsManagerService } from '../../services/entity-editors/polygons-e
 import { PolygonsEditorService } from '../../services/entity-editors/polygons-editor/polygons-editor.service';
 import { LabelProps } from '../../models/label-props';
 import { EditablePolygon } from '../../models/editable-polygon';
-import { EditCylinder } from '../../models/edit-cylinder';
 import { EditPolyline } from '../../models/edit-polyline';
+import { EditVector } from '../../models/edit-vector';
 
 @Component({
   selector: 'polygons-editor',
@@ -65,14 +65,15 @@ import { EditPolyline } from '../../models/edit-polyline';
     </ac-layer>
 
     <ac-layer #widgetsLayer acFor="let widget of editWidgets$" [context]="this">
-      <ac-cylinder-desc props="{
+      <ac-vector-desc props="{
         show: getWidgetShow(widget),
         position : widget.getPositionCallback(),
-        length: widget.length,
-        topRadius: widget.topRadius,
-        bottomRadius: widget.bottomRadius,
+        length: 15,
+        direction: widget.direction,
+        minimumLengthInPixels: 256,
+        color: Cesium.Color.CORNFLOWERBLUE,
       }">
-      </ac-cylinder-desc>
+      </ac-vector-desc>
     </ac-layer>
 
     <ac-layer #editPolygonsLayer acFor="let polygon of editPolygons$" [context]="this">
@@ -402,8 +403,8 @@ export class PolygonsEditorComponent implements OnDestroy {
     return point.show && (point.isVirtualEditPoint() ? point.props.showVirtual : point.props.show);
   }
 
-  getWidgetShow(cylinder: EditCylinder) {
-    return cylinder.show;
+  getWidgetShow(widget: EditVector) {
+    return widget.show;
   }
 
   getPolylineShow(polyline: EditPolyline) {

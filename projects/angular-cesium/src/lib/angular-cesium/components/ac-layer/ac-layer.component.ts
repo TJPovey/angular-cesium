@@ -30,6 +30,7 @@ import { CylinderDrawerService } from '../../services/drawers/cylinder-dawer/cyl
 import { EllipsoidDrawerService } from '../../services/drawers/ellipoid-drawer/ellipsoid-drawer.service';
 import { PolylineVolumeDrawerService } from '../../services/drawers/polyline-volume-dawer/polyline-volume-drawer.service';
 import { WallDrawerService } from '../../services/drawers/wall-dawer/wall-drawer.service';
+import { VectorDrawerService } from '../../services/drawers/vector-drawer/vector-drawer.service';
 import { RectangleDrawerService } from '../../services/drawers/rectangle-dawer/rectangle-drawer.service';
 import { PolylinePrimitiveDrawerService } from '../../services/drawers/polyline-primitive-drawer/polyline-primitive-drawer.service';
 import { LabelPrimitiveDrawerService } from '../../services/drawers/label-primitive-drawer/label-primitive-drawer.service';
@@ -103,6 +104,7 @@ import { CzmlDrawerService } from '../../services/drawers/czml-drawer/czml-drawe
     PointPrimitiveDrawerService,
     HtmlDrawerService,
     CzmlDrawerService,
+    VectorDrawerService,
 
     DynamicEllipseDrawerService,
     DynamicPolylineDrawerService,
@@ -167,7 +169,8 @@ export class AcLayerComponent implements OnInit, OnChanges, AfterContentInit, On
               billboardPrimitiveDrawerService: BillboardPrimitiveDrawerService,
               pointPrimitiveDrawerService: PointPrimitiveDrawerService,
               htmlDrawerService: HtmlDrawerService,
-              czmlDrawerService: CzmlDrawerService
+              czmlDrawerService: CzmlDrawerService,
+              vectorDrawerService: VectorDrawerService,
   ) {
     this._drawerList = new Map([
       ['billboard', billboardDrawerService],
@@ -191,6 +194,7 @@ export class AcLayerComponent implements OnInit, OnChanges, AfterContentInit, On
       ['pointPrimitive', pointPrimitiveDrawerService],
       ['html', htmlDrawerService],
       ['czml', czmlDrawerService],
+      ['vector', vectorDrawerService],
 
       ['dynamicEllipse', dynamicEllipseDrawerService],
       ['dynamicPolyline', dynamicPolylineDrawerService],

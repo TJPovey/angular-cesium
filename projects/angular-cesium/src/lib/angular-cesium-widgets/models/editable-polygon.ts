@@ -1,5 +1,4 @@
 import { CesiumService } from './../../angular-cesium/services/cesium/cesium.service';
-import { EditCylinder } from './edit-cylinder';
 import { AcEntity } from '../../angular-cesium/models/ac-entity';
 import { EditPoint } from './edit-point';
 import { EditPolyline } from './edit-polyline';
@@ -14,12 +13,13 @@ import { defaultLabelProps, LabelProps } from './label-props';
 import { EditWall } from './edit-wall';
 import { WallProps } from './wall-edit-options';
 import polylabel from 'polylabel';
+import { EditVector } from './edit-vector';
 
 export class EditablePolygon extends AcEntity {
   private positions: EditPoint[] = [];
   private polylines: EditPolyline[] = [];
   public wall: EditWall;
-  private cylinderWidget: EditCylinder;
+  private vectorWidget: EditVector;
   private movingPoint: EditPoint;
   private doneCreation = false;
   private _enableEdit = true;
@@ -128,8 +128,8 @@ export class EditablePolygon extends AcEntity {
       point.show = value;
       this.updatePointsLayer(false, point);
     });
-    this.cylinderWidget.show = value;
-    this.widgetLayer.update(this.cylinderWidget, this.cylinderWidget.getId());
+    this.vectorWidget.show = value;
+    this.widgetLayer.update(this.vectorWidget, this.vectorWidget.getId());
   }
 
   private createFromExisting(positions: Cartesian3[]) {
@@ -261,25 +261,12 @@ export class EditablePolygon extends AcEntity {
     }
   }
 
-  // TODO: only render when sketch finished and in edit mode
   private renderWidgets() {
-    this.cylinderWidget && this.widgetLayer.remove(this.cylinderWidget.getId());
-    this.cylinderWidget = new EditCylinder(this.id, this.getTopCentrePoint(), 1, 1, 5);
-    this.widgetLayer.update(this.cylinderWidget, this.cylinderWidget.getId());
-
+    this.vectorWidget && this.widgetLayer.remove(this.vectorWidget.getId());
     let normal = new Cesium.Cartesian3();
     this.cesiumService.getScene().globe.ellipsoid.geocentricSurfaceNormal(this.getTopCentrePoint(), normal);
-
-    //TODO: add vector class annd drawer to angular-cesium library
-    this.cesiumService.getViewer().entities.add({
-      position: this.getTopCentrePoint(),
-      vector: {
-        direction: normal,
-        length: 15,
-        minimumLengthInPixels: 256,
-        color: Cesium.Color.CORNFLOWERBLUE
-      }
-    });
+    this.vectorWidget = new EditVector(this.id, this.getTopCentrePoint(), normal, 15);
+    this.widgetLayer.update(this.vectorWidget, this.vectorWidget.getId());
   }
 
   addPointFromExisting(position: Cartesian3) {
@@ -335,8 +322,8 @@ export class EditablePolygon extends AcEntity {
       const prevRealPoint = this.positions[((pointIndex - 2) + pointsCount) % pointsCount];
       this.updateMiddleVirtualPoint(nextVirtualPoint, editPoint, nextRealPoint);
       this.updateMiddleVirtualPoint(prevVirtualPoint, editPoint, prevRealPoint);
-      this.cylinderWidget.show = false;
-      this.widgetLayer.update(this.cylinderWidget, this.cylinderWidget.getId());
+      this.vectorWidget.show = false;
+      this.widgetLayer.update(this.vectorWidget, this.vectorWidget.getId());
     }
     this.updatePolygonsLayer();
     this.updatePointsLayer(true, editPoint);
@@ -398,8 +385,9 @@ export class EditablePolygon extends AcEntity {
     this.height = this.polygonOptions.extrudedHeight;
     // this.polygonsLayer.update(this, this.id); only required when not using polygon callbacks for height and height reference
     this.renderWall();
-    this.renderWidgets();
     this.renderPolylines();
+    // update vector position
+    this.vectorWidget.position = this.getTopCentrePoint();
   }
 
   updateDisplay(polygonDisplay: PolygonDisplay) {
@@ -529,9 +517,9 @@ export class EditablePolygon extends AcEntity {
       this.wallsLayer.remove(this.wall.getId());
       this.wall = undefined;
     }
-    if (this.cylinderWidget) {
-      this.widgetLayer.remove(this.cylinderWidget.getId());
-      this.cylinderWidget = undefined;
+    if (this.vectorWidget) {
+      this.widgetLayer.remove(this.vectorWidget.getId());
+      this.vectorWidget = undefined;
     }
 
     this.positions.forEach(editPoint => {

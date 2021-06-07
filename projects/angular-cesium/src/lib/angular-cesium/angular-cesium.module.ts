@@ -64,6 +64,7 @@ import PARSE_PIPES_CONFIG_MAP from './pipes/pipe-config-map';
 
 import { AcCzmlDescComponent } from './components/ac-czml-desc/ac-czml-desc.component';
 import { AcRectangleComponent } from './components/ac-rectangle/ac-rectangle.component';
+import { AcVectorDescComponent } from './components/ac-vector-desc/ac-vector-desc.component';
 
 @NgModule({
   imports: [
@@ -125,7 +126,8 @@ import { AcRectangleComponent } from './components/ac-rectangle/ac-rectangle.com
     AcDynamicCircleDescComponent,
     AcStaticCircleDescComponent,
     AcStaticPolygonDescComponent,
-    AcRectangleComponent
+    AcRectangleComponent,
+    AcVectorDescComponent
   ],
   exports: [
     AcMapComponent,
@@ -168,6 +170,7 @@ import { AcRectangleComponent } from './components/ac-rectangle/ac-rectangle.com
     AcHtmlDescComponent,
     AcArrayDescComponent,
     AcCzmlDescComponent,
+    AcVectorDescComponent,
     AcRectangleComponent,
     AcStaticEllipseDescComponent,
     AcDynamicEllipseDescComponent,

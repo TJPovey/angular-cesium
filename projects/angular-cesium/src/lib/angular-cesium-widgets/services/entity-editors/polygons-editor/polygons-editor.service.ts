@@ -1,4 +1,4 @@
-import { EditCylinder } from './../../../models/edit-cylinder';
+import { EditVector } from './../../../models/edit-vector';
 import { publish, tap } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
 import { CesiumService } from '../../../../angular-cesium/services/cesium/cesium.service';
@@ -528,7 +528,7 @@ export class PolygonsEditorService {
 
     const widgetDragRegistration = this.mapEventsManager.register({
       event: CesiumEvent.LEFT_CLICK_DRAG,
-      entityType: EditCylinder,
+      entityType: EditVector,
       pick: PickOptions.PICK_FIRST,
       pickConfig: options.pickConfiguration,
       priority,

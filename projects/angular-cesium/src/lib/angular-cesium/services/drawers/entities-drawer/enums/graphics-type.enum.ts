@@ -14,4 +14,5 @@ export enum GraphicsType {
   point = Cesium.PointGraphics,
   rectangle = Cesium.RectangleGraphics,
   wall = Cesium.WallGraphics,
+  vector = Cesium.VectorGraphics,
 }
