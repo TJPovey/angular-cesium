@@ -1,6 +1,7 @@
 import { WallProps } from './wall-edit-options';
 import { AcEntity } from '../../angular-cesium/models/ac-entity';
 import { Cartesian3 } from '../../angular-cesium/models/cartesian3';
+import { EntityType } from '../../angular-cesium/models/entity-type.enum';
 
 export class EditWall extends AcEntity {
   static counter = 0;
@@ -11,13 +12,14 @@ export class EditWall extends AcEntity {
   private _height: number;
   private _wallProps: WallProps;
 
-  constructor(entityId: string, positions: Cartesian3[], height: number, wallProps?: WallProps) {
+  constructor(entityId: string, positions: Cartesian3[], height: number, wallProps?: WallProps, acEntityType: EntityType = EntityType.DEFAULT) {
     super();
     this.editedEntityId = entityId;
     this.positions = positions;
     this._height = height;
     this.id = this.generateId();
     this._wallProps = {...wallProps};
+    this._acEntityType = acEntityType;
   }
 
   get props(): WallProps {

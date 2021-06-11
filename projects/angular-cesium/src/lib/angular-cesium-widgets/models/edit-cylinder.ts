@@ -1,4 +1,5 @@
 import { AcEntity } from '../../angular-cesium/models/ac-entity';
+import { EntityType } from '../../angular-cesium/models/entity-type.enum';
 import { Cartesian3 } from '../../angular-cesium/models/cartesian3';
 import { CylinderProps } from './cylinder-edit-options';
 
@@ -13,7 +14,7 @@ export class EditCylinder extends AcEntity {
   private _bottomRadius: number;
   private _position: Cartesian3;
 
-  constructor(entityId: string, position: Cartesian3, topRadius: number, bottomRadius: number, length: number, cylinderProps?: CylinderProps) {
+  constructor(entityId: string, position: Cartesian3, topRadius: number, bottomRadius: number, length: number, cylinderProps?: CylinderProps, acEntityType: EntityType = EntityType.DEFAULT) {
     super();
     this.editedEntityId = entityId;
     this._length = length;
@@ -22,6 +23,7 @@ export class EditCylinder extends AcEntity {
     this._topRadius = topRadius;
     this._bottomRadius = bottomRadius;
     this._position = position;
+    this._acEntityType = acEntityType;
   }
 
   get props(): CylinderProps {

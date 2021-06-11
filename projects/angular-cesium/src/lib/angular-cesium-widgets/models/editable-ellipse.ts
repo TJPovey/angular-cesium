@@ -8,6 +8,7 @@ import { PointProps } from './point-edit-options';
 import { PolylineProps } from './polyline-edit-options';
 import { defaultLabelProps, LabelProps } from './label-props';
 import { CoordinateConverter } from '../../angular-cesium/services/coordinate-converter/coordinate-converter.service';
+import { EntityType } from '../../angular-cesium/models/entity-type.enum';
 
 export class EditableEllipse extends AcEntity {
   private _center: EditPoint;
@@ -32,6 +33,7 @@ export class EditableEllipse extends AcEntity {
     private options: EllipseEditOptions,
   ) {
     super();
+    this._acEntityType = EntityType.EDITABLE;
     this._ellipseProps = {...options.ellipseProps};
     this._pointProps = {...options.pointProps};
   }

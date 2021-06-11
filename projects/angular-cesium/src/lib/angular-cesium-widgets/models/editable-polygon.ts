@@ -14,6 +14,7 @@ import { EditWall } from './edit-wall';
 import { WallProps } from './wall-edit-options';
 import polylabel from 'polylabel';
 import { EditVector } from './edit-vector';
+import { EntityType } from '../../angular-cesium/models/entity-type.enum';
 
 export class EditablePolygon extends AcEntity {
   private positions: EditPoint[] = [];
@@ -43,6 +44,7 @@ export class EditablePolygon extends AcEntity {
               private polygonEditOptions: PolygonEditOptions,
               positions?: Cartesian3[]) {
     super();
+    this._acEntityType = EntityType.EDITABLE;
     this.polygonOptions = {...polygonEditOptions};
     this.polygonProps = {...polygonEditOptions.polygonProps};
     this.defaultPointProps = {...polygonEditOptions.pointProps};
@@ -152,9 +154,9 @@ export class EditablePolygon extends AcEntity {
       const pointOrCartesian: any = points[i];
       let newPoint = null;
       if (pointOrCartesian.pointProps) {
-        newPoint = new EditPoint(this.id, pointOrCartesian.position, pointOrCartesian.pointProps);
+        newPoint = new EditPoint(this.id, pointOrCartesian.position, pointOrCartesian.pointProps, undefined, EntityType.EDITABLE);
       } else {
-        newPoint = new EditPoint(this.id, pointOrCartesian, this.defaultPointProps);
+        newPoint = new EditPoint(this.id, pointOrCartesian, this.defaultPointProps, undefined, EntityType.EDITABLE);
       }
       newPoints.push(newPoint);
     }
@@ -179,13 +181,15 @@ export class EditablePolygon extends AcEntity {
   private setMiddleVirtualPoint(firstP: EditPoint, secondP: EditPoint): EditPoint {
     const midPointCartesian3 = Cesium.Cartesian3.lerp(firstP.getPosition(), secondP.getPosition(), 0.5, new Cesium.Cartesian3());
     let midPoint: EditPoint;
-
+    // TODO: look into why clamping won't work in ditto
+    /*
     if (this.height <= 0) {
       let updatedPoint = this.cesiumService.getScene().clampToHeight(midPointCartesian3);
       if (!Cesium.defined(updatedPoint)) {
         const cart = Cesium.Cartographic.fromCartesian(midPointCartesian3);
         const height = this.cesiumService.getScene().globe.getHeight(cart);
         cart.height = height;
+        console.log(height);
         updatedPoint = Cesium.Cartographic.toCartesian(cart);
       }
       midPoint = new EditPoint(this.id, updatedPoint, this.defaultPointProps);
@@ -193,7 +197,8 @@ export class EditablePolygon extends AcEntity {
     else {
       midPoint = new EditPoint(this.id, midPointCartesian3, this.defaultPointProps);
     }
-
+    */
+    midPoint = new EditPoint(this.id, midPointCartesian3, this.defaultPointProps, undefined, EntityType.EDITABLE);
     midPoint.setVirtualEditPoint(true);
 
     const firstIndex = this.positions.indexOf(firstP);
@@ -204,6 +209,10 @@ export class EditablePolygon extends AcEntity {
   private updateMiddleVirtualPoint(virtualEditPoint: EditPoint, prevPoint: EditPoint, nextPoint: EditPoint) {
     const midPointCartesian3 = Cesium.Cartesian3.lerp(prevPoint.getPosition(), nextPoint.getPosition(), 0.5, new Cesium.Cartesian3());
 
+    virtualEditPoint.setPosition(midPointCartesian3);
+    return;
+    // TODO: Look into why clamping won't work for dto
+    /*
     if (this.height > 0) {
       virtualEditPoint.setPosition(midPointCartesian3);
       return;
@@ -217,6 +226,7 @@ export class EditablePolygon extends AcEntity {
       updatedPoint = Cesium.Cartographic.toCartesian(cart);
     }
     virtualEditPoint.setPosition(updatedPoint);
+    */
   }
 
   changeVirtualPointToRealPoint(point: EditPoint) {
@@ -243,7 +253,7 @@ export class EditablePolygon extends AcEntity {
     realPoints.forEach((point, index) => {
       const nextIndex = (index + 1) % (realPoints.length);
       const nextPoint = realPoints[nextIndex];
-      const polyline = new EditPolyline(this.id, point.getPosition(), nextPoint.getPosition(), this.defaultPolylineProps);
+      const polyline = new EditPolyline(this.id, point.getPosition(), nextPoint.getPosition(), this.defaultPolylineProps, EntityType.EDITABLE);
       this.polylines.push(polyline);
       this.polylinesLayer.update(polyline, polyline.getId());
     });
@@ -256,7 +266,7 @@ export class EditablePolygon extends AcEntity {
       const realPositions = this.getAllRealPositions();
       realPositions.push(realPositions[0].clone());
   
-      this.wall = new EditWall(this.id, realPositions, this.height, this.defaultWallProps);
+      this.wall = new EditWall(this.id, realPositions, this.height, this.defaultWallProps, EntityType.EDITABLE);
       this.wallsLayer.update(this.wall, this.wall.getId());
     }
   }
@@ -265,12 +275,12 @@ export class EditablePolygon extends AcEntity {
     this.vectorWidget && this.widgetLayer.remove(this.vectorWidget.getId());
     let normal = new Cesium.Cartesian3();
     this.cesiumService.getScene().globe.ellipsoid.geocentricSurfaceNormal(this.getTopCentrePoint(), normal);
-    this.vectorWidget = new EditVector(this.id, this.getTopCentrePoint(), normal, 15);
+    this.vectorWidget = new EditVector(this.id, this.getTopCentrePoint(), normal, 15, undefined, EntityType.EDITABLE);
     this.widgetLayer.update(this.vectorWidget, this.vectorWidget.getId());
   }
 
   addPointFromExisting(position: Cartesian3) {
-    const newPoint = new EditPoint(this.id, position, this.defaultPointProps);
+    const newPoint = new EditPoint(this.id, position, this.defaultPointProps, undefined, EntityType.EDITABLE);
     this.positions.push(newPoint);
     this.updatePointsLayer(true, newPoint);
   }
@@ -282,12 +292,12 @@ export class EditablePolygon extends AcEntity {
     }
     const isFirstPoint = !this.positions.length;
     if (isFirstPoint) {
-      const firstPoint = new EditPoint(this.id, position, this.defaultPointProps);
+      const firstPoint = new EditPoint(this.id, position, this.defaultPointProps, undefined, EntityType.EDITABLE);
       this.positions.push(firstPoint);
       this.updatePointsLayer(true, firstPoint);
     }
 
-    this.movingPoint = new EditPoint(this.id, position.clone(), this.defaultPointProps);
+    this.movingPoint = new EditPoint(this.id, position.clone(), this.defaultPointProps, undefined, EntityType.EDITABLE);
     this.positions.push(this.movingPoint);
 
     this.updatePointsLayer(true, this.movingPoint);

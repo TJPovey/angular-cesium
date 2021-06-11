@@ -7,6 +7,7 @@ import { PointProps } from './point-edit-options';
 import { HippodromeEditOptions, HippodromeProps } from './hippodrome-edit-options';
 import { GeoUtilsService } from '../../angular-cesium/services/geo-utils/geo-utils.service';
 import { defaultLabelProps, LabelProps } from './label-props';
+import { EntityType } from '../../angular-cesium/models/entity-type.enum';
 
 export class EditableHippodrome extends AcEntity {
   private positions: EditPoint[] = [];
@@ -27,6 +28,7 @@ export class EditableHippodrome extends AcEntity {
     positions?: Cartesian3[],
   ) {
     super();
+    this._acEntityType = EntityType.EDITABLE;
     this.defaultPointProps = {...editOptions.pointProps};
     this.hippodromeProps = {...editOptions.hippodromeProps};
     if (positions && positions.length === 2) {

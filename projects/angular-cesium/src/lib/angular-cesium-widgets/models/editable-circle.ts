@@ -9,6 +9,7 @@ import { PointProps } from './point-edit-options';
 import { PolylineProps } from './polyline-edit-options';
 import { defaultLabelProps, LabelProps } from './label-props';
 import { EllipseProps } from './ellipse-edit-options';
+import { EntityType } from '../../angular-cesium/models/entity-type.enum';
 
 export class EditableCircle extends AcEntity {
   private _center: EditPoint;
@@ -30,6 +31,7 @@ export class EditableCircle extends AcEntity {
     private options: CircleEditOptions,
   ) {
     super();
+    this._acEntityType = EntityType.EDITABLE;
     this._circleProps = {...options.circleProps};
     this._pointProps = {...options.pointProps};
     this._polylineProps = {...options.polylineProps};

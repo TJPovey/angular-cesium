@@ -1,5 +1,6 @@
 import { AcLayerComponent } from '../../angular-cesium/components/ac-layer/ac-layer.component';
 import { AcEntity } from '../../angular-cesium/models/ac-entity';
+import { EntityType } from '../../angular-cesium/models/entity-type.enum';
 import { Cartesian3 } from '../../angular-cesium/models/cartesian3';
 import { CoordinateConverter } from '../../angular-cesium/services/coordinate-converter/coordinate-converter.service';
 import { EditPoint } from './edit-point';
@@ -23,6 +24,7 @@ export class EditablePoint extends AcEntity {
               private editOptions: PointEditOptions,
               position?: Cartesian3) {
     super();
+    this._acEntityType = EntityType.EDITABLE;
     this._props = {...editOptions.pointProps};
     if (position) {
       this.createFromExisting(position);

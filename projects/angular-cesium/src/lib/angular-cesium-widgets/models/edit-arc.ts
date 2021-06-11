@@ -1,4 +1,5 @@
 import { AcEntity } from '../../angular-cesium/models/ac-entity';
+import { EntityType } from '../../angular-cesium/models/entity-type.enum';
 import { Cartesian3 } from '../../angular-cesium/models/cartesian3';
 import { PolylineProps } from './polyline-edit-options';
 
@@ -11,7 +12,7 @@ export class EditArc extends AcEntity {
   private _delta: number;
   private _angle: number;
 
-  constructor(entityId: string, center: Cartesian3, radius: number, delta: number, angle: number, private _arcProps: PolylineProps) {
+  constructor(entityId: string, center: Cartesian3, radius: number, delta: number, angle: number, private _arcProps: PolylineProps, acEntityType: EntityType = EntityType.DEFAULT) {
     super();
     this.id = this.generateId();
     this.editedEntityId = entityId;
@@ -19,6 +20,7 @@ export class EditArc extends AcEntity {
     this._radius = radius;
     this._delta = delta;
     this._angle = angle;
+    this._acEntityType = acEntityType;
   }
 
   get props() {

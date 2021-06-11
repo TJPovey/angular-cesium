@@ -8,6 +8,7 @@ import { PointProps } from './point-edit-options';
 import { PolylineEditOptions, PolylineProps } from './polyline-edit-options';
 import { GeoUtilsService } from '../../angular-cesium/services/geo-utils/geo-utils.service';
 import { defaultLabelProps, LabelProps } from './label-props';
+import { EntityType } from '../../angular-cesium/models/entity-type.enum';
 
 export class EditablePolyline extends AcEntity {
   private positions: EditPoint[] = [];
@@ -28,6 +29,7 @@ export class EditablePolyline extends AcEntity {
               private editOptions: PolylineEditOptions,
               positions?: Cartesian3[]) {
     super();
+    this._acEntityType = EntityType.EDITABLE;
     this._pointProps = {...editOptions.pointProps};
     this.props = {...editOptions.polylineProps};
     if (positions && positions.length >= 2) {

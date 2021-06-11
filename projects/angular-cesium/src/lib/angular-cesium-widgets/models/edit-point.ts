@@ -1,4 +1,5 @@
 import { AcEntity } from '../../angular-cesium/models/ac-entity';
+import { EntityType } from '../../angular-cesium/models/entity-type.enum';
 import { Cartesian3 } from '../../angular-cesium/models/cartesian3';
 import { PointProps } from './point-edit-options';
 
@@ -11,13 +12,14 @@ export class EditPoint extends AcEntity {
   private pointProps: PointProps;
   private _show = true;
 
-  constructor(entityId: string, position: Cartesian3, pointProps?: PointProps, virtualPoint = false) {
+  constructor(entityId: string, position: Cartesian3, pointProps?: PointProps, virtualPoint = false, acEntityType: EntityType = EntityType.DEFAULT) {
     super();
     this.editedEntityId = entityId;
     this.position = position;
     this.id = this.generateId();
     this.pointProps = {...pointProps};
     this._virtualEditPoint = virtualPoint;
+    this._acEntityType = acEntityType;
   }
 
   get show() {

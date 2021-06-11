@@ -1,4 +1,5 @@
 import { AcEntity } from '../../angular-cesium/models/ac-entity';
+import { EntityType } from '../../angular-cesium/models/entity-type.enum';
 import { Cartesian3 } from '../../angular-cesium/models/cartesian3';
 import { PolylineProps } from './polyline-edit-options';
 
@@ -9,12 +10,13 @@ export class EditPolyline extends AcEntity {
   private positions: Cartesian3[];
   private _polylineProps: PolylineProps;
 
-  constructor(entityId: string, startPosition: Cartesian3, endPosition: Cartesian3, polylineProps?: PolylineProps) {
+  constructor(entityId: string, startPosition: Cartesian3, endPosition: Cartesian3, polylineProps?: PolylineProps, acEntityType: EntityType = EntityType.DEFAULT) {
     super();
     this.editedEntityId = entityId;
     this.id = this.generateId();
     this.positions = [startPosition, endPosition];
     this._polylineProps = {...polylineProps};
+    this._acEntityType = acEntityType;
   }
 
   get props(): PolylineProps {

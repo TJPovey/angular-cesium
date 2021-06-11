@@ -8,6 +8,7 @@ import { GeoUtilsService } from '../../angular-cesium/services/geo-utils/geo-uti
 import { RectangleEditOptions, RectangleProps } from './rectangle-edit-options';
 import { PointProps } from './point-edit-options';
 import { defaultLabelProps, LabelProps } from './label-props';
+import { EntityType } from '../../angular-cesium/models/entity-type.enum';
 
 export class EditableRectangle extends AcEntity {
   private positions: EditPoint[] = [];
@@ -28,6 +29,7 @@ export class EditableRectangle extends AcEntity {
     positions?: Cartesian3[]
   ) {
     super();
+    this._acEntityType = EntityType.EDITABLE;
     this.defaultPointProps = {...editOptions.pointProps};
     this.rectangleProps = {...editOptions.rectangleProps};
     if (positions && positions.length === 2) {

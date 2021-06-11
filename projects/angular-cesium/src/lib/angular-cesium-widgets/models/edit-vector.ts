@@ -1,4 +1,5 @@
 import { AcEntity } from '../../angular-cesium/models/ac-entity';
+import { EntityType } from '../../angular-cesium/models/entity-type.enum';
 import { Cartesian3 } from '../../angular-cesium/models/cartesian3';
 import { VectorProps } from './vector-edit-options';
 
@@ -12,7 +13,7 @@ export class EditVector extends AcEntity {
   private _position: Cartesian3;
   private _direction: Cartesian3;
 
-  constructor(entityId: string, position: Cartesian3, direction: Cartesian3, length: number, vectorProps?: VectorProps) {
+  constructor(entityId: string, position: Cartesian3, direction: Cartesian3, length: number, vectorProps?: VectorProps, acEntityType: EntityType = EntityType.DEFAULT) {
     super();
     this.editedEntityId = entityId;
     this._length = length;
@@ -20,6 +21,7 @@ export class EditVector extends AcEntity {
     this._vectorProps = {...vectorProps};
     this._position = position;
     this._direction = direction;
+    this._acEntityType = acEntityType;
   }
 
   get props(): VectorProps {
