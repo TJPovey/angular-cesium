@@ -170,6 +170,7 @@ export class PolygonsEditorService {
     let points = polygon.getAllVirtualPoints();
     points.forEach((point) => {
       //TODO: 
+      // this.rayIntersection(point.getPosition());
       let updatedPoint = this.cesiumScene.clampToHeight(point.getPosition());
       if (!Cesium.defined(updatedPoint)) {
         const cart = Cesium.Cartographic.fromCartesian(point.getPosition());
@@ -314,6 +315,17 @@ export class PolygonsEditorService {
     if (Cesium.defined(cartesianScratch) && !cartesianScratch.equals(new Cesium.Cartesian3())) {
       return cartesianScratch;
     }
+  }
+
+  // TODO: replace clamp to height with ray intersection for virtual points - if undefined use globe.getheight, else ray intersection
+  // TODO: mess with the ray pick width and exclude sketch elements
+  private rayIntersection(position: Cartesian3) {
+    let normal = new Cesium.Cartesian3();
+    this.cesiumScene.globe.ellipsoid.geocentricSurfaceNormal(position, normal);
+    Cesium.Cartesian3.negate(normal, normal);
+    const ray = new Cesium.Ray(position, normal);
+    const rayIntersection = this.cesiumScene.pickFromRay(ray);
+    console.log(rayIntersection);
   }
 
   create(options = DEFAULT_POLYGON_OPTIONS, priority = 100): PolygonEditorObservable {
@@ -584,9 +596,10 @@ export class PolygonsEditorService {
           points: this.getPoints(id),
         });
 
-        if (this.polygonsManager.get(id).height <= 0) {
-          this.clampVirtual(id);
-        }
+        // TODO: look into why clamping not working in ditto
+        // if (this.polygonsManager.get(id).height <= 0) {
+        //   this.clampVirtual(id);
+        // }
         // this.clampPointsDebounced(id, options.clampHeightTo3D, options.clampHeightTo3DOptions);
       });
 
@@ -616,16 +629,19 @@ export class PolygonsEditorService {
           editSubject.next({
             ...updateHeight,
           });
-          if (updatedHeight > 0) {
-            this.updateVirtualPoints(id);
-          }
-          else {
-            // TODO: why won't deboucne work
-            // timeout required as point will clamp to top of wall otherwise
-            setTimeout(() => {
-              this.clampVirtual(id)
-            }, 1);
-          }
+          this.updateVirtualPoints(id);
+
+          // if (updatedHeight > 0) {
+          //   this.updateVirtualPoints(id);
+          // }
+          // else {
+          //   // TODO: why won't deboucne work
+          //   // timeout required as point will clamp to top of wall otherwise
+          //   setTimeout(() => {
+          //     // TODO: look into why clamping not working in ditto
+          //     this.clampVirtual(id)
+          //   }, 1);
+          // }
 
         });
 

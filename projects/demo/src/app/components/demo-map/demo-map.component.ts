@@ -18,7 +18,7 @@ export class DemoMapComponent implements AfterViewInit {
   Cesium = Cesium;
   viewer: Viewer = null;
   mapboxStyleImageryProvider = MapLayerProviderOptions.MapboxStyleImageryProvider;
-  mapTerrainProvider = MapTerrainProviderOptions.WorldTerrain;
+  // mapTerrainProvider = MapTerrainProviderOptions.WorldTerrain;
   constructor(private viewerConf: ViewerConfiguration,
               public appSettingsService: AppSettingsService,
               public mapsManager: MapsManagerService) {
@@ -32,9 +32,13 @@ export class DemoMapComponent implements AfterViewInit {
       shouldAnimate: false,
       homeButton: false,
       geocoder: true,
+      sceneMode: SceneMode.SCENE3D,
       navigationHelpButton: false,
       navigationInstructionsInitiallyVisible: false,
       mapMode2D: Cesium.MapMode2D.ROTATE,
+      terrainProvider: Cesium.createWorldTerrain({
+        requestVertexNormals: true,
+      }),
     };
 
     viewerConf.viewerModifier = (viewer: any) => {
@@ -58,21 +62,6 @@ export class DemoMapComponent implements AfterViewInit {
     tileset.readyPromise
       .then((tile: Cesium3DTileset) => {
         this.viewer.zoomTo(tile);
-        console.log(tile.boundingSphere.center);
-
-        let normal = new Cesium.Cartesian3();
-        this.viewer.scene.globe.ellipsoid.geocentricSurfaceNormal(tile.boundingSphere.center, normal);
-
-        //TODO: add vector class annd drawer to angular-cesium library
-        this.viewer.entities.add({
-          position: tile.boundingSphere.center,
-          vector: {
-            direction: normal,
-            length: 15,
-            minimumLengthInPixels: 256,
-            color: Cesium.Color.CORNFLOWERBLUE
-          }
-        });
       })
       .otherwise((error) => {
         console.log(error);
