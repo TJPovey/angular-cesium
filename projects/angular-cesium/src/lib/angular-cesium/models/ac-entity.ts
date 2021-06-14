@@ -1,9 +1,5 @@
 import { EntityType } from './entity-type.enum';
 
-export interface AcEntity {
-  _acentityType?: EntityType;
-}
-
 /**
  * Angular Cesium parent entity, all entities should inherit from it.
  * ```typescript
@@ -16,24 +12,12 @@ export interface AcEntity {
  */
 export class AcEntity {
 
-  protected _acEntityType?: EntityType;
-
-  /**
-   * Creates entity from a json
-   * @param json entity object
-   * @returns entity as AcEntity
-   */
-  static create(json?: any) {
-    // TODO: May need to add acentitytype here, can't find where this is called
-    // if (json) {
-    //   return Object.assign(new AcEntity(), json);
-    // }
-    return new AcEntity();
-  }
+  protected _acEntityType: EntityType;
 
   /**
    * Creates entity from a json
    * @param json (Optional) entity object
+   * @param acEntityType (Optional) The type of the AcEntity
    */
   constructor(json?: any, acEntityType: EntityType = EntityType.DEFAULT) {
     Object.assign(this, json);
@@ -43,5 +27,4 @@ export class AcEntity {
   public get acEntityType(): EntityType {
     return this._acEntityType;
   }
-
 }
