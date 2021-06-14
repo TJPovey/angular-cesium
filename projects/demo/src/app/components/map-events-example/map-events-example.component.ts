@@ -33,7 +33,7 @@ export class MapEventsExampleComponent implements OnInit {
     const track1: AcNotification = {
       id: '0',
       actionType: ActionType.ADD_UPDATE,
-      entity: AcEntity.create({
+      entity: new AcEntity({
         id: '0',
         name: 'click me',
         color: Cesium.Color.BLUE,
@@ -43,7 +43,7 @@ export class MapEventsExampleComponent implements OnInit {
     const track2: AcNotification = {
       id: '1',
       actionType: ActionType.ADD_UPDATE,
-      entity: AcEntity.create({
+      entity: new AcEntity({
         id: '1',
         name: 'choose me',
         color: Cesium.Color.AQUA,
@@ -53,7 +53,7 @@ export class MapEventsExampleComponent implements OnInit {
     const track10: AcNotification = {
       id: '10',
       actionType: ActionType.ADD_UPDATE,
-      entity: AcEntity.create({
+      entity: new AcEntity({
         id: '10',
         name: 'click me now please!',
         color: Cesium.Color.BLUE,
@@ -63,7 +63,7 @@ export class MapEventsExampleComponent implements OnInit {
     const track11: AcNotification = {
       id: '11',
       actionType: ActionType.ADD_UPDATE,
-      entity: AcEntity.create({
+      entity: new AcEntity({
         id: '11',
         name: 'choose me too :)',
         color: Cesium.Color.CORNFLOWERBLUE,
@@ -73,7 +73,7 @@ export class MapEventsExampleComponent implements OnInit {
     const track3: AcNotification = {
       id: '2',
       actionType: ActionType.ADD_UPDATE,
-      entity: AcEntity.create({
+      entity: new AcEntity({
         id: '2',
         name: 'click me too',
         color: Cesium.Color.DARKBLUE,
@@ -83,7 +83,7 @@ export class MapEventsExampleComponent implements OnInit {
     const track4: AcNotification = {
       id: '3',
       actionType: ActionType.ADD_UPDATE,
-      entity: AcEntity.create({
+      entity: new AcEntity({
         id: '3',
         name: 'Drag me',
         color: Cesium.Color.BLUE,

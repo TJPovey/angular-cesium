@@ -1,6 +1,6 @@
 import { Observable, of as observableOf } from 'rxjs';
 import { Component, OnInit } from '@angular/core';
-import { AcNotification, ActionType, CesiumService } from 'angular-cesium';
+import { AcEntity, AcNotification, ActionType, CesiumService } from 'angular-cesium';
 
 @Component({
   selector: 'hippodrome-layer-example',
@@ -22,24 +22,24 @@ export class HippodromeLayerExampleComponent implements OnInit {
   simTracks$: Observable<AcNotification> = observableOf({
       id: '1',
       actionType: ActionType.ADD_UPDATE,
-      entity: {
+      entity: new AcEntity ({
         color: Cesium.Color.RED.withAlpha(0.5),
         positions: Cesium.Cartesian3.fromDegreesArray([
           -90.0, 40.0,
           -93.0, 40.0,
         ]),
-      }
+      })
     },
     {
       id: '2',
       actionType: ActionType.ADD_UPDATE,
-      entity: {
+      entity: new AcEntity ({
         color: Cesium.Color.BLUE.withAlpha(0.5),
         positions: Cesium.Cartesian3.fromDegreesArray([
           -92.0, 38.0,
           -93.0, 38.0,
         ]),
-      }
+      })
     });
 
   Cesium = Cesium;

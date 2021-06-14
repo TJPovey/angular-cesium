@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { AcLayerComponent, AcNotification, ActionType, CesiumService, CoordinateConverter } from 'angular-cesium';
+import { AcEntity, AcLayerComponent, AcNotification, ActionType, CesiumService, CoordinateConverter } from 'angular-cesium';
 import { Subject } from 'rxjs';
 // import { CesiumHeatMapMaterialCreator } from 'angular-cesium';
 
@@ -29,12 +29,12 @@ export class HeatmapExampleComponent implements OnInit {
       this.entities$.next({
         id: '1',
         actionType: ActionType.ADD_UPDATE,
-        entity: {
+        entity: new AcEntity ({
           rectangle: this.rect,
           center: this.circleCenter,
           circleMaterial: this.circleHeatMapMaterial,
           rectMaterial: this.rectHeatMapMaterial,
-        },
+        }),
       });
     }, 1000);
   }

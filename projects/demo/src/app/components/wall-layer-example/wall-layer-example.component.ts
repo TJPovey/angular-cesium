@@ -1,6 +1,6 @@
 import { from, Observable } from 'rxjs';
 import { Component, OnInit } from '@angular/core';
-import { AcNotification, ActionType } from 'angular-cesium';
+import { AcEntity, AcNotification, ActionType } from 'angular-cesium';
 import { map } from 'rxjs/operators';
 
 @Component({
@@ -24,14 +24,14 @@ export class WallLayerExampleComponent implements OnInit {
   Cesium = Cesium;
   show = true;
   entities = [
-    {
+    new AcEntity ({
       id: '1',
       positions : Cesium.Cartesian3.fromDegreesArrayHeights([-115.0, 44.0, 200000.0,
         -90.0, 44.0, 200000.0]),
       minimumHeights : [100000.0, 100000.0],
       material : Cesium.Color.RED
-    },
-    {
+    }),
+    new AcEntity ({
       id: '2',
       positions : Cesium.Cartesian3.fromDegreesArrayHeights([-107.0, 43.0, 100000.0,
         -97.0, 43.0, 100000.0,
@@ -40,14 +40,14 @@ export class WallLayerExampleComponent implements OnInit {
         -107.0, 43.0, 100000.0]),
       material : Cesium.Color.GREEN,
       outline : true
-    },
+    }),
   ];
 
   constructor() {
   }
 
   ngOnInit() {
-    this.entities$ = from(this.entities).pipe(map(entity => ({
+    this.entities$ = from(this.entities).pipe(map((entity: any) => ({
       id: entity.id,
       actionType: ActionType.ADD_UPDATE,
       entity: entity,

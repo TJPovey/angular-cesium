@@ -1,6 +1,6 @@
 import { from, from as observableFrom, Observable, Subject } from 'rxjs';
 import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
-import { AcLayerComponent, AcNotification, ActionType } from 'angular-cesium';
+import { AcEntity, AcLayerComponent, AcNotification, ActionType } from 'angular-cesium';
 
 @Component({
   selector: 'html-layer-example',
@@ -14,24 +14,24 @@ export class HtmlExampleComponent implements OnInit {
   html1 = {
     id: '0',
     actionType: ActionType.ADD_UPDATE,
-    entity: {
+    entity: new AcEntity ({
       id: '0',
       show: true,
       name: 'html 1',
       position: Cesium.Cartesian3.fromDegrees(30, 30),
       color: Cesium.Color.RED
-    },
+    }),
   };
   html2 = {
     id: '1',
     actionType: ActionType.ADD_UPDATE,
-    entity: {
+    entity: new AcEntity ({
       id: '1',
       show: true,
       name: 'html 2',
       position: Cesium.Cartesian3.fromDegrees(35, 35),
       color: Cesium.Color.RED
-    }
+    })
   };
 
   constructor() {
@@ -44,12 +44,12 @@ export class HtmlExampleComponent implements OnInit {
 
   updateHtml() {
     if (this.html1) {
-      this.html1.entity.name = 'tsahi';
+      (this.html1.entity as any).name = 'tsahi';
       this.layer.update(this.html1.entity, this.html1.id);
     }
 
-    this.html2.entity.name = 'gonen';
-    this.html2.entity.position = Cesium.Cartesian3.fromDegrees(44, 44);
+    (this.html2.entity as any).name = 'gonen';
+    (this.html2.entity as any).position = Cesium.Cartesian3.fromDegrees(44, 44);
     this.layer.update(this.html2.entity, this.html2.id);
   }
 
@@ -69,7 +69,7 @@ export class HtmlExampleComponent implements OnInit {
 
   toggleShow() {
     if (this.html1) {
-      this.html1.entity.show = !this.html1.entity.show;
+      (this.html1.entity as any).show = !(this.html1.entity as any).show;
       this.layer.update(this.html1.entity, this.html1.id);
     }
   }

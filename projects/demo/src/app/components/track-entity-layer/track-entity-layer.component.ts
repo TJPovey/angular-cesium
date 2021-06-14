@@ -16,7 +16,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 const initialLocation = {
   id: '1',
   actionType: ActionType.ADD_UPDATE,
-  entity: AcEntity.create({
+  entity: new AcEntity({
     width: 10,
     color: Cesium.Color.BLUE,
     position: Cesium.Cartesian3.fromDegrees(32, 40),
@@ -52,7 +52,7 @@ export class TrackEntityLayerComponent implements OnInit, AfterViewInit {
       this.points$.next({
         id: '1',
         actionType: ActionType.ADD_UPDATE,
-        entity: AcEntity.create({
+        entity: new AcEntity({
           width: 10,
           color: Cesium.Color.BLUE,
           position,

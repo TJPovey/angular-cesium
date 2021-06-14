@@ -1,6 +1,6 @@
 import { from, Observable } from 'rxjs';
 import { AfterViewInit, Component, OnInit } from '@angular/core';
-import { AcNotification, ActionType } from 'angular-cesium';
+import { AcEntity, AcNotification, ActionType } from 'angular-cesium';
 import { map } from 'rxjs/operators';
 
 @Component({
@@ -22,14 +22,14 @@ import { map } from 'rxjs/operators';
 export class BoxesLayerComponent implements OnInit {
 
   entities = [
-    {
+    new AcEntity ({
       id: '0',
       position: Cesium.Cartesian3.fromDegrees(-100.0, 40.0, 300000.0),
-    },
-    {
+    }),
+    new AcEntity ({
       id: '1',
       position: Cesium.Cartesian3.fromDegrees(-120.0, 40.0, 300000.0),
-    }
+    })
   ];
 
   boxDimensions = new Cesium.Cartesian3(800000, 800000, 800000);
@@ -38,7 +38,7 @@ export class BoxesLayerComponent implements OnInit {
 
   constructor() {}
   ngOnInit() {
-    this.boxes$ = from(this.entities).pipe(map(entity => ({
+    this.boxes$ = from(this.entities).pipe(map((entity: any) => ({
           id: entity.id,
           actionType: ActionType.ADD_UPDATE,
           entity: entity,

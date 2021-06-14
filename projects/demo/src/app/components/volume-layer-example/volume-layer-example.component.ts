@@ -1,6 +1,6 @@
 import { from, Observable } from 'rxjs';
 import { Component, OnInit } from '@angular/core';
-import { AcNotification, ActionType } from 'angular-cesium';
+import { AcEntity, AcNotification, ActionType } from 'angular-cesium';
 import { MockDataProviderService } from '../../utils/services/dataProvider/mock-data-provider.service';
 import { map } from 'rxjs/operators';
 
@@ -26,7 +26,7 @@ export class VolumeLayerExampleComponent implements OnInit {
   Cesium = Cesium;
   show = true;
   entities = [
-    {
+    new AcEntity ({
       id: '1',
       positions: Cesium.Cartesian3.fromDegreesArray([-85.0, 32.0,
         -85.0, 36.0,
@@ -34,8 +34,8 @@ export class VolumeLayerExampleComponent implements OnInit {
       shape: this.computeCircle(60000.0),
       cornerType: Cesium.CornerType.BEVELED,
       material: Cesium.Color.RED
-    },
-    {
+    }),
+    new AcEntity ({
       id: '2',
       positions: Cesium.Cartesian3.fromDegreesArrayHeights([-90.0, 32.0, 0.0,
         -90.0, 36.0, 100000.0,
@@ -47,8 +47,8 @@ export class VolumeLayerExampleComponent implements OnInit {
       cornerType: Cesium.CornerType.BEVELED,
       material: Cesium.Color.GREEN.withAlpha(0.5),
       outline: true
-    },
-    {
+    }),
+    new AcEntity ({
       id: '3',
       positions: Cesium.Cartesian3.fromDegreesArrayHeights([-95.0, 32.0, 0.0,
         -95.0, 36.0, 100000.0,
@@ -57,14 +57,14 @@ export class VolumeLayerExampleComponent implements OnInit {
       cornerType: Cesium.CornerType.MITERED,
       material: Cesium.Color.BLUE,
       outline: true
-    }
+    })
   ];
 
   constructor(private dataProvider: MockDataProviderService) {
   }
 
   ngOnInit() {
-    this.entities$ = from(this.entities).pipe(map(entity => ({
+    this.entities$ = from(this.entities).pipe(map((entity: any) => ({
       id: entity.id,
       actionType: ActionType.ADD_UPDATE,
       entity: entity,

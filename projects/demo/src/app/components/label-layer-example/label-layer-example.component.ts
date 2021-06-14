@@ -1,6 +1,6 @@
 import { from as observableFrom, Observable } from 'rxjs';
 import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
-import { AcLayerComponent, AcNotification, ActionType } from 'angular-cesium';
+import { AcEntity, AcLayerComponent, AcNotification, ActionType } from 'angular-cesium';
 
 @Component({
   selector: 'label-layer-example',
@@ -17,18 +17,18 @@ export class LabelLayerExampleComponent implements OnInit, AfterViewInit {
     const base1: AcNotification = {
       id: '0',
       actionType: ActionType.ADD_UPDATE,
-      entity: {name: 'base alpha', position: Cesium.Cartesian3.fromRadians(1.0, 1.0), show: true}
+      entity: new AcEntity ({name: 'base alpha', position: Cesium.Cartesian3.fromRadians(1.0, 1.0), show: true})
     };
     const base2 = {
       id: '1',
       actionType: ActionType.ADD_UPDATE,
-      entity: {name: 'base beta', position: Cesium.Cartesian3.fromRadians(1.2, 1.2), show: true}
+      entity: new AcEntity ({name: 'base beta', position: Cesium.Cartesian3.fromRadians(1.2, 1.2), show: true})
     };
     const baseArray = [base1, base2];
     this.bases$ = observableFrom(baseArray);
 
     setTimeout(() => {
-      base2.entity.name = 'base gama';
+      (base2.entity as any).name = 'base gama';
       this.layer.updateNotification(base2);
     }, 5000);
     setTimeout(() => {
