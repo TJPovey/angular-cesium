@@ -31,7 +31,7 @@ export class EditableCircle extends AcEntity {
     private options: CircleEditOptions,
   ) {
     super();
-    this._acEntityType = EntityType.EDITABLE;
+    this._acEntityType = EntityType.EDITABLE_PARENT;
     this._circleProps = {...options.circleProps};
     this._pointProps = {...options.pointProps};
     this._polylineProps = {...options.polylineProps};

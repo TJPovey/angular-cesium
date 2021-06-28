@@ -3,5 +3,10 @@
  */
 export enum EntityType {
   DEFAULT,
-  EDITABLE,
+  EDITABLE_PARENT,
+  EDITABLE_CHILD,
+  WIDGET,
+  MARKER,
+  MEASURE,
+  LABEL,
 }

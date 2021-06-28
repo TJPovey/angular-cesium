@@ -44,7 +44,7 @@ export class EditablePolygon extends AcEntity {
               private polygonEditOptions: PolygonEditOptions,
               positions?: Cartesian3[]) {
     super();
-    this._acEntityType = EntityType.EDITABLE;
+    this._acEntityType = EntityType.EDITABLE_PARENT;
     this.polygonOptions = {...polygonEditOptions};
     this.polygonProps = {...polygonEditOptions.polygonProps};
     this.defaultPointProps = {...polygonEditOptions.pointProps};
@@ -154,9 +154,9 @@ export class EditablePolygon extends AcEntity {
       const pointOrCartesian: any = points[i];
       let newPoint = null;
       if (pointOrCartesian.pointProps) {
-        newPoint = new EditPoint(this.id, pointOrCartesian.position, pointOrCartesian.pointProps, undefined, EntityType.EDITABLE);
+        newPoint = new EditPoint(this.id, pointOrCartesian.position, pointOrCartesian.pointProps, undefined, EntityType.EDITABLE_CHILD);
       } else {
-        newPoint = new EditPoint(this.id, pointOrCartesian, this.defaultPointProps, undefined, EntityType.EDITABLE);
+        newPoint = new EditPoint(this.id, pointOrCartesian, this.defaultPointProps, undefined, EntityType.EDITABLE_CHILD);
       }
       newPoints.push(newPoint);
     }
@@ -198,7 +198,7 @@ export class EditablePolygon extends AcEntity {
       midPoint = new EditPoint(this.id, midPointCartesian3, this.defaultPointProps);
     }
     */
-    midPoint = new EditPoint(this.id, midPointCartesian3, this.defaultPointProps, undefined, EntityType.EDITABLE);
+    midPoint = new EditPoint(this.id, midPointCartesian3, this.defaultPointProps, undefined, EntityType.EDITABLE_CHILD);
     midPoint.setVirtualEditPoint(true);
 
     const firstIndex = this.positions.indexOf(firstP);
@@ -253,7 +253,7 @@ export class EditablePolygon extends AcEntity {
     realPoints.forEach((point, index) => {
       const nextIndex = (index + 1) % (realPoints.length);
       const nextPoint = realPoints[nextIndex];
-      const polyline = new EditPolyline(this.id, point.getPosition(), nextPoint.getPosition(), this.defaultPolylineProps, EntityType.EDITABLE);
+      const polyline = new EditPolyline(this.id, point.getPosition(), nextPoint.getPosition(), this.defaultPolylineProps, EntityType.EDITABLE_CHILD);
       this.polylines.push(polyline);
       this.polylinesLayer.update(polyline, polyline.getId());
     });
@@ -266,7 +266,7 @@ export class EditablePolygon extends AcEntity {
       const realPositions = this.getAllRealPositions();
       realPositions.push(realPositions[0].clone());
   
-      this.wall = new EditWall(this.id, realPositions, this.height, this.defaultWallProps, EntityType.EDITABLE);
+      this.wall = new EditWall(this.id, realPositions, this.height, this.defaultWallProps, EntityType.EDITABLE_CHILD);
       this.wallsLayer.update(this.wall, this.wall.getId());
     }
   }
@@ -275,12 +275,12 @@ export class EditablePolygon extends AcEntity {
     this.vectorWidget && this.widgetLayer.remove(this.vectorWidget.getId());
     let normal = new Cesium.Cartesian3();
     this.cesiumService.getScene().globe.ellipsoid.geocentricSurfaceNormal(this.getTopCentrePoint(), normal);
-    this.vectorWidget = new EditVector(this.id, this.getTopCentrePoint(), normal, 15, undefined, EntityType.EDITABLE);
+    this.vectorWidget = new EditVector(this.id, this.getTopCentrePoint(), normal, 15, undefined, EntityType.EDITABLE_CHILD);
     this.widgetLayer.update(this.vectorWidget, this.vectorWidget.getId());
   }
 
   addPointFromExisting(position: Cartesian3) {
-    const newPoint = new EditPoint(this.id, position, this.defaultPointProps, undefined, EntityType.EDITABLE);
+    const newPoint = new EditPoint(this.id, position, this.defaultPointProps, undefined, EntityType.EDITABLE_CHILD);
     this.positions.push(newPoint);
     this.updatePointsLayer(true, newPoint);
   }
@@ -292,12 +292,12 @@ export class EditablePolygon extends AcEntity {
     }
     const isFirstPoint = !this.positions.length;
     if (isFirstPoint) {
-      const firstPoint = new EditPoint(this.id, position, this.defaultPointProps, undefined, EntityType.EDITABLE);
+      const firstPoint = new EditPoint(this.id, position, this.defaultPointProps, undefined, EntityType.EDITABLE_CHILD);
       this.positions.push(firstPoint);
       this.updatePointsLayer(true, firstPoint);
     }
 
-    this.movingPoint = new EditPoint(this.id, position.clone(), this.defaultPointProps, undefined, EntityType.EDITABLE);
+    this.movingPoint = new EditPoint(this.id, position.clone(), this.defaultPointProps, undefined, EntityType.EDITABLE_CHILD);
     this.positions.push(this.movingPoint);
 
     this.updatePointsLayer(true, this.movingPoint);

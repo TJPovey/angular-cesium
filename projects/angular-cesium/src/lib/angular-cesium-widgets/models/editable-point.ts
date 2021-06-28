@@ -24,7 +24,7 @@ export class EditablePoint extends AcEntity {
               private editOptions: PointEditOptions,
               position?: Cartesian3) {
     super();
-    this._acEntityType = EntityType.EDITABLE;
+    this._acEntityType = EntityType.EDITABLE_PARENT;
     this._props = {...editOptions.pointProps};
     if (position) {
       this.createFromExisting(position);

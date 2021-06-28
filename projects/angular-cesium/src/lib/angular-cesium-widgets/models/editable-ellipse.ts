@@ -33,7 +33,7 @@ export class EditableEllipse extends AcEntity {
     private options: EllipseEditOptions,
   ) {
     super();
-    this._acEntityType = EntityType.EDITABLE;
+    this._acEntityType = EntityType.EDITABLE_PARENT;
     this._ellipseProps = {...options.ellipseProps};
     this._pointProps = {...options.pointProps};
   }
