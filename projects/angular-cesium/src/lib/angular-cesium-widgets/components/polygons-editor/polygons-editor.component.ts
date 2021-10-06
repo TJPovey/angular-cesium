@@ -380,8 +380,7 @@ export class PolygonsEditorComponent implements OnDestroy {
       case EditActions.SET_MATERIAL: {
         const polygon = this.polygonsManager.get(update.id);
         if (polygon) {
-          polygon.enableEdit = true;
-          polygon.updateDisplay(update.polygonDisplay);
+          polygon.updateDisplay(update.display);
         }
         break;
       }

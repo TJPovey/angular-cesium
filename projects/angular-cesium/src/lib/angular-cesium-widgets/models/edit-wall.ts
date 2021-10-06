@@ -75,8 +75,16 @@ export class EditWall extends AcEntity {
     return Array(positions.length).fill(maxHeight);
   }
 
+  getPositionsConstantHeight(): number[] {
+    return this.getPositionsMinHeight().map(pos => pos + this.height);
+  }
+
   getPositionsMaxHeightCallback() {
     return new Cesium.CallbackProperty(this.getPositionsMaxHeight.bind(this), false);
+  }
+
+  getPositionsConstantHeightCallback() {
+    return new Cesium.CallbackProperty(this.getPositionsConstantHeight.bind(this), false);
   }
 
   setPositions(positions: Cartesian3[]) {

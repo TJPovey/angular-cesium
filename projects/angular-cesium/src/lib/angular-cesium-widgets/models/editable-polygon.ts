@@ -6,7 +6,7 @@ import { AcLayerComponent } from '../../angular-cesium/components/ac-layer/ac-la
 import { Cartesian3 } from '../../angular-cesium/models/cartesian3';
 import { CoordinateConverter } from '../../angular-cesium/services/coordinate-converter/coordinate-converter.service';
 import { GeoUtilsService } from '../../angular-cesium/services/geo-utils/geo-utils.service';
-import { PolygonEditOptions, PolygonProps, PolygonDisplay } from './polygon-edit-options';
+import { PolygonEditOptions, PolygonProps } from './polygon-edit-options';
 import { PointProps } from './point-edit-options';
 import { PolylineProps } from './polyline-edit-options';
 import { defaultLabelProps, LabelProps } from './label-props';
@@ -15,6 +15,7 @@ import { WallProps } from './wall-edit-options';
 import polylabel from 'polylabel';
 import { EditVector } from './edit-vector';
 import { EntityType } from '../../angular-cesium/models/entity-type.enum';
+import { Display } from './basic-edit-update';
 
 export class EditablePolygon extends AcEntity {
   private positions: EditPoint[] = [];
@@ -24,6 +25,7 @@ export class EditablePolygon extends AcEntity {
   private movingPoint: EditPoint;
   private doneCreation = false;
   private _enableEdit = true;
+  private _display: Display;
   private _polygonOptions: PolygonEditOptions;
   private _polygonProps: PolygonProps;
   private _defaultPointProps: PointProps;
@@ -50,6 +52,11 @@ export class EditablePolygon extends AcEntity {
     this.defaultPointProps = {...polygonEditOptions.pointProps};
     this.defaultPolylineProps = {...polygonEditOptions.polylineProps};
     this.defaultWallProps = {...polygonEditOptions.wallProps};
+    this._display = {
+      primaryMaterial: this.polygonProps.material,
+      secondaryMaterial: this.defaultWallProps.material,
+      lineMaterial: this.defaultWallProps.outlineColor,
+    };
     if (positions && positions.length >= 3) {
       this.createFromExisting(positions);
     }
@@ -118,6 +125,10 @@ export class EditablePolygon extends AcEntity {
   }
   public set polygonOptions(value: PolygonEditOptions) {
     this._polygonOptions = value;
+  }
+
+  public get display(): Display {
+    return this._display;
   }
 
   get enableEdit() {
@@ -400,17 +411,18 @@ export class EditablePolygon extends AcEntity {
     this.vectorWidget.position = this.getTopCentrePoint();
   }
 
-  updateDisplay(polygonDisplay: PolygonDisplay) {
-    this.polygonProps.material = polygonDisplay.polygonMaterial;
-    this.defaultWallProps.material = polygonDisplay.wallMaterial;
-    this.defaultWallProps.outlineColor = polygonDisplay.polylineMaterial;
+  updateDisplay(polygonDisplay: Display) {
+    this._display = polygonDisplay;
+    this.polygonProps.material = polygonDisplay.primaryMaterial;
+    this.defaultWallProps.material = polygonDisplay.secondaryMaterial;
+    this.defaultWallProps.outlineColor = polygonDisplay.lineMaterial;
 
     if (this.wall) {
       this.wall.props = {...this.wall.props, ...this.defaultWallProps};
       this.wallsLayer.update(this.wall, this.wall.getId());
     } 
 
-    this.defaultPolylineProps.material = polygonDisplay.polylineMaterial;
+    this.defaultPolylineProps.material = polygonDisplay.lineMaterial;
     this.polylines.forEach((polyline) => {
       polyline.props = {...polyline.props, ...this.defaultPolylineProps}
       this.polylinesLayer.update(polyline, polyline.getId());

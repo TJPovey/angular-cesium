@@ -15,6 +15,7 @@ import { AcToolbarButtonComponent } from './components/toolbar/ac-toolbar-button
 import { RangeAndBearingComponent } from './components/range-and-bearing/range-and-bearing.component';
 import { ZoomToRectangleService } from './services/zoom-to-rectangle.service';
 import { RectanglesEditorComponent } from './components/rectangles-editor/rectangles-editor.component';
+import { WallsEditorComponent } from './components/walls-editor/walls-editor.component';
 
 @NgModule({
   imports: [CommonModule, AngularCesiumModule],
@@ -26,6 +27,7 @@ import { RectanglesEditorComponent } from './components/rectangles-editor/rectan
     CirclesEditorComponent,
     EllipsesEditorComponent,
     PolylinesEditorComponent,
+    WallsEditorComponent,
     DraggableToMapDirective,
     DragIconComponent,
     AcToolbarComponent,
@@ -40,6 +42,7 @@ import { RectanglesEditorComponent } from './components/rectangles-editor/rectan
     CirclesEditorComponent,
     EllipsesEditorComponent,
     PolylinesEditorComponent,
+    WallsEditorComponent,
     DraggableToMapDirective,
     AcToolbarComponent,
     AcToolbarButtonComponent,

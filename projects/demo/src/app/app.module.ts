@@ -45,6 +45,7 @@ import { EllipsoidLayerExampleComponent } from './components/ellipsoid-layer-exa
 import { VolumeLayerExampleComponent } from './components/volume-layer-example/volume-layer-example.component';
 import { WallLayerExampleComponent } from './components/wall-layer-example/wall-layer-example.component';
 import { RectangleEditorExampleComponent } from './components/editor-layer/rectangle-editor-example/rectangle-editor-example.component';
+import { WallsEditorLayerComponent } from './components/editor-layer/walls-editor-layer/walls-editor-layer.component';
 
 
 @NgModule({
@@ -98,6 +99,7 @@ import { RectangleEditorExampleComponent } from './components/editor-layer/recta
     EllipsesEditorExampleComponent,
     MyCustomContextMenuComponent,
     RectangleLayerExampleComponent,
+    WallsEditorLayerComponent,
   ],
   entryComponents: [MyCustomContextMenuComponent],
   bootstrap: [AppComponent]
