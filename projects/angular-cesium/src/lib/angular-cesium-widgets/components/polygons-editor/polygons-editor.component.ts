@@ -19,7 +19,8 @@ import { EditVector } from '../../models/edit-vector';
 
 @Component({
   selector: 'polygons-editor',
-  template: /*html*/ `
+  template: `
+
     <ac-layer #editPolylinesLayer acFor="let polyline of editPolylines$" [context]="this">
       <ac-polyline-desc
         props="{

@@ -17,7 +17,7 @@ import { LabelProps } from '../../models/label-props';
 
 @Component({
   selector: 'polylines-editor',
-  template: /*html*/ `
+  template: `
     <ac-layer #editPolylinesLayer acFor="let polyline of editPolylines$" [context]="this">
       <ac-polyline-desc
         props="{

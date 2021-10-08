@@ -18,7 +18,7 @@ import { EditVector } from '../../models/edit-vector';
 
 @Component({
   selector: 'walls-editor',
-  template: /*html*/ `
+  template: `
 
     <ac-layer #editPointsLayer acFor="let point of editPoints$" [context]="this">
       <ac-point-desc
